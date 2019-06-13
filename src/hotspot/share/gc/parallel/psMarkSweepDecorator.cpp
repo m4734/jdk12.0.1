@@ -325,7 +325,6 @@ void PSMarkSweepDecorator::adjust_pointers() {
 void PSMarkSweepDecorator::compact(bool mangle_free_space ) {
   // Copy all live objects to their new location
   // Used by MarkSweep::mark_sweep_phase4()
-
   HeapWord*       q = space()->bottom();
   HeapWord* const t = _end_of_live;
   debug_only(HeapWord* prev_q = NULL);

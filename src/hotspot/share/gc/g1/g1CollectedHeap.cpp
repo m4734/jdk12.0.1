@@ -2871,6 +2871,7 @@ void G1CollectedHeap::start_new_collection_set() {
 
 bool
 G1CollectedHeap::do_collection_pause_at_safepoint(double target_pause_time_ms) {
+//printf("pas\n");//cgmin
   assert_at_safepoint_on_vm_thread();
   guarantee(!is_gc_active(), "collection is not reentrant");
 
@@ -2881,6 +2882,7 @@ G1CollectedHeap::do_collection_pause_at_safepoint(double target_pause_time_ms) {
   _gc_timer_stw->register_gc_start();
 
   GCIdMark gc_id_mark;
+//printf("stw start\n");//cgmin
   _gc_tracer_stw->report_gc_start(gc_cause(), _gc_timer_stw->gc_start());
 
   SvcGCMarker sgcm(SvcGCMarker::MINOR);
@@ -3182,6 +3184,8 @@ G1CollectedHeap::do_collection_pause_at_safepoint(double target_pause_time_ms) {
     _gc_tracer_stw->report_tenuring_threshold(_g1_policy->tenuring_threshold());
     _gc_timer_stw->register_gc_end();
     _gc_tracer_stw->report_gc_end(_gc_timer_stw->gc_end(), _gc_timer_stw->time_partitions());
+//printf("stw end??\n");//cgmin
+//printf("stw %f\n",TimeHelper::counter_to_millis(_gc_timer_stw->time_partitions()->sum_of_pauses().value())); //cgmin
   }
   // It should now be safe to tell the concurrent mark thread to start
   // without its logging output interfering with the logging output

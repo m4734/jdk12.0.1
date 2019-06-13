@@ -65,6 +65,7 @@ ShenandoahGCSession::ShenandoahGCSession(GCCause::Cause cause) :
 ShenandoahGCSession::~ShenandoahGCSession() {
   _heap->heuristics()->record_cycle_end();
   _timer->register_gc_end();
+printf("sgcs end\n"); //cgmin
   _heap->trace_heap(GCWhen::AfterGC, _tracer);
   _tracer->report_gc_end(_timer->gc_end(), _timer->time_partitions());
   assert(!ShenandoahGCPhase::is_valid_phase(ShenandoahGCPhase::current_phase()),

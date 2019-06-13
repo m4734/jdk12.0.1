@@ -954,6 +954,8 @@ void G1ConcurrentMark::concurrent_cycle_end() {
   _gc_timer_cm->register_gc_end();
 
   _gc_tracer_cm->report_gc_end(_gc_timer_cm->gc_end(), _gc_timer_cm->time_partitions());
+//printf("cm %f\n",TimeHelper::counter_to_millis(_gc_timer_cm->time_partitions()->sum_of_pauses().value())); //cgmin
+
 }
 
 void G1ConcurrentMark::mark_from_roots() {

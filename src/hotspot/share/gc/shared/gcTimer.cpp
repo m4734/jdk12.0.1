@@ -149,6 +149,7 @@ void TimePartitions::update_statistics(GCPhase* phase) {
     const Tickspan pause = phase->end() - phase->start();
     _sum_of_pauses += pause;
     _longest_pause = MAX2(pause, _longest_pause);
+//printf("update_statics\n");//cgmin
   }
 }
 

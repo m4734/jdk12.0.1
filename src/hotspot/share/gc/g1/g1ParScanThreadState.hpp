@@ -139,6 +139,10 @@ public:
 
   void flush(size_t* surviving_young_words);
 
+//cgmin cnt
+int cgmin_b,b_sum;
+int cgmin_s,s_sum;
+
 private:
   #define G1_PARTIAL_ARRAY_MASK 0x2
 

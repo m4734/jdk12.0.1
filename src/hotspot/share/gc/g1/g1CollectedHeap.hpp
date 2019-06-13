@@ -1223,6 +1223,7 @@ public:
     // humongous and that we don't allocate a humongous
     // object in a TLAB.
     return word_size > _humongous_object_threshold_in_words;
+//	return false; //cgmin    
   }
 
   // Returns the humongous threshold for a specific region size

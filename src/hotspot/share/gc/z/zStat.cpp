@@ -626,6 +626,7 @@ void ZStatPhaseCycle::register_start(const Ticks& start) const {
 
 void ZStatPhaseCycle::register_end(const Ticks& start, const Ticks& end) const {
   timer()->register_gc_end(end);
+printf("zstat end\n");//cgmin
 
   ZCollectedHeap::heap()->print_heap_after_gc();
   ZCollectedHeap::heap()->trace_heap_after_gc(ZTracer::tracer());

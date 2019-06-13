@@ -117,7 +117,6 @@ void PSMarkSweep::invoke(bool maximum_heap_compaction) {
 bool PSMarkSweep::invoke_no_policy(bool clear_all_softrefs) {
   assert(SafepointSynchronize::is_at_safepoint(), "must be at a safepoint");
   assert(ref_processor() != NULL, "Sanity");
-
   if (GCLocker::check_active_before_gc()) {
     return false;
   }
@@ -391,7 +390,7 @@ bool PSMarkSweep::invoke_no_policy(bool clear_all_softrefs) {
   _gc_timer->register_gc_end();
 
   _gc_tracer->report_gc_end(_gc_timer->gc_end(), _gc_timer->time_partitions());
-
+printf("ps mark sweep end?\n"); //cgmin
   return true;
 }
 

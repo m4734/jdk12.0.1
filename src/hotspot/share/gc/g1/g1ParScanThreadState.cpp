@@ -57,6 +57,7 @@ G1ParScanThreadState::G1ParScanThreadState(G1CollectedHeap* g1h,
     _old_gen_is_full(false),
     _num_optional_regions(optional_cset_length)
 {
+cgmin_s = cgmin_b = s_sum = b_sum = 0;//cgmin init
   // we allocate G1YoungSurvRateNumRegions plus one entries, since
   // we "sacrifice" entry 0 to keep track of surviving bytes for
   // non-young regions (where the age is -1)
@@ -104,6 +105,7 @@ G1ParScanThreadState::~G1ParScanThreadState() {
   delete _closures;
   FREE_C_HEAP_ARRAY(size_t, _surviving_young_words_base);
   delete[] _oops_into_optional_regions;
+printf("g1psts s %d %d b %d %d\n",cgmin_s,s_sum,cgmin_b,b_sum); //cgmin cnt
 }
 
 void G1ParScanThreadState::waste(size_t& wasted, size_t& undo_wasted) {
@@ -275,7 +277,19 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   const oop forward_ptr = old->forward_to_atomic(obj, old_mark, memory_order_relaxed);
   if (forward_ptr == NULL) {
     Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz);
-
+//printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+if (word_sz >= 512)
+{
+++cgmin_b;
+b_sum+=word_sz;
+printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+}
+else
+{
+++cgmin_s;
+s_sum+=word_sz;
+}
+//	printf("%d\n",(int)word_sz);
     if (dest_state.is_young()) {
       if (age < markOopDesc::max_age) {
         age++;

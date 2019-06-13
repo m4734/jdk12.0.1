@@ -638,6 +638,8 @@ bool PSScavenge::invoke_no_policy() {
   AdaptiveSizePolicyOutput::print(size_policy, heap->total_collections());
 
   _gc_timer.register_gc_end();
+//printf("pss end\n"); //cgmin
+//printf("pss end %f\n",TimeHelper::counter_to_millis(_gc_timer.time_partitions()->sum_of_pauses().value())); //cgmin
 
   _gc_tracer.report_gc_end(_gc_timer.gc_end(), _gc_timer.time_partitions());
 

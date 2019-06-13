@@ -185,8 +185,9 @@ void TenuredGeneration::collect(bool   full,
   gch->post_full_gc_dump(gc_timer);
 
   gc_timer->register_gc_end();
-
-  gc_tracer->report_gc_end(gc_timer->gc_end(), gc_timer->time_partitions());
+//printf("tg end?\n"); //cgmin
+ printf("tg end %f\n",TimeHelper::counter_to_millis(gc_timer->time_partitions()->sum_of_pauses().value())); //cgmin
+ gc_tracer->report_gc_end(gc_timer->gc_end(), gc_timer->time_partitions());
 }
 
 HeapWord*

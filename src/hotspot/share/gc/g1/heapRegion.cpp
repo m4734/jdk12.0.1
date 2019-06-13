@@ -198,7 +198,7 @@ void HeapRegion::set_closed_archive() {
 void HeapRegion::set_starts_humongous(HeapWord* obj_top, size_t fill_size) {
   assert(!is_humongous(), "sanity / pre-condition");
   assert(top() == bottom(), "should be empty");
-
+printf("h s\n"); //cgmin
   report_region_type_change(G1HeapRegionTraceType::StartsHumongous);
   _type.set_starts_humongous();
   _humongous_start_region = this;

@@ -337,7 +337,6 @@ inline void CompactibleSpace::scan_and_compact(SpaceType* space) {
 
       // prefetch beyond compaction_top
       Prefetch::write(compaction_top, copy_interval);
-
       // copy object and reinit its mark
       assert(cur_obj != compaction_top, "everything in this pass should be moving");
       Copy::aligned_conjoint_words(cur_obj, compaction_top, size);

@@ -70,6 +70,9 @@ size_t G1FullGCCompactTask::G1CompactRegionClosure::apply(oop obj) {
   // copy object and reinit its mark
   HeapWord* obj_addr = (HeapWord*) obj;
   assert(obj_addr != destination, "everything in this pass should be moving");
+//printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
+//if (size >= 512)
+//printf("%d\n",(int)size);
   Copy::aligned_conjoint_words(obj_addr, destination, size);
   oop(destination)->init_mark_raw();
   assert(oop(destination)->klass() != NULL, "should have a class");

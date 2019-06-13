@@ -698,7 +698,7 @@ void DefNewGeneration::collect(bool   full,
   heap->trace_heap_after_gc(&gc_tracer);
 
   _gc_timer->register_gc_end();
-
+printf("def new gen end\n"); //cgmin
   gc_tracer.report_gc_end(_gc_timer->gc_end(), _gc_timer->time_partitions());
 }
 

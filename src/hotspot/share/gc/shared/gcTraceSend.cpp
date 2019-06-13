@@ -51,6 +51,7 @@ void GCTracer::send_garbage_collection_event() const {
     event.set_starttime(_shared_gc_info.start_timestamp());
     event.set_endtime(_shared_gc_info.end_timestamp());
     event.commit();
+printf("send garbage collection event\n"); //cgmin
   }
 }
 
@@ -96,6 +97,7 @@ void ParallelOldTracer::send_parallel_old_event() const {
     e.set_starttime(_shared_gc_info.start_timestamp());
     e.set_endtime(_shared_gc_info.end_timestamp());
     e.commit();
+printf("send parallel old event\n"); //cgmin
   }
 }
 
@@ -107,6 +109,7 @@ void YoungGCTracer::send_young_gc_event() const {
     e.set_starttime(_shared_gc_info.start_timestamp());
     e.set_endtime(_shared_gc_info.end_timestamp());
     e.commit();
+printf("send young gc event\n"); //cgmin
   }
 }
 
@@ -155,6 +158,7 @@ void OldGCTracer::send_old_gc_event() const {
     e.set_starttime(_shared_gc_info.start_timestamp());
     e.set_endtime(_shared_gc_info.end_timestamp());
     e.commit();
+printf("send old gc event\n"); //cgmin
   }
 }
 
@@ -195,6 +199,7 @@ void G1NewTracer::send_g1_young_gc_event() {
     e.set_starttime(_shared_gc_info.start_timestamp());
     e.set_endtime(_shared_gc_info.end_timestamp());
     e.commit();
+printf("send g1 young gc event\n"); //cgmin
   }
 }
 

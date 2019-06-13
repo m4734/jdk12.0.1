@@ -1027,6 +1027,7 @@ void ParNewGeneration::collect(bool   full,
   _gc_timer->register_gc_end();
 
   _gc_tracer.report_gc_end(_gc_timer->gc_end(), _gc_timer->time_partitions());
+printf("par end?\n"); //cgmin
 }
 
 size_t ParNewGeneration::desired_plab_sz() {
