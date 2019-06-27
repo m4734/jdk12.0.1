@@ -32,7 +32,8 @@ private:
   // Minimum region size; we won't go lower than that.
   // We might want to decrease this in the future, to deal with small
   // heaps a bit more efficiently.
-  static const size_t MIN_REGION_SIZE = 1024 * 1024;
+//  static const size_t MIN_REGION_SIZE = 1024 * 1024;
+static const size_t MIN_REGION_SIZE = 4096;//  cgmin
 
   // Maximum region size; we don't go higher than that. There's a good
   // reason for having an upper bound. We don't want regions to get too

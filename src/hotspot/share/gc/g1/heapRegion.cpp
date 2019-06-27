@@ -77,7 +77,9 @@ void HeapRegion::setup_heap_region_size(size_t initial_heap_size, size_t max_hea
 
   // Now make sure that we don't go over or under our limits.
   if (region_size < HeapRegionBounds::min_size()) {
-    region_size = HeapRegionBounds::min_size();
+//    region_size = HeapRegionBounds::min_size();
+region_size = region_size; // cgmin
+printf("region_size %d\n",(int)region_size);
   } else if (region_size > HeapRegionBounds::max_size()) {
     region_size = HeapRegionBounds::max_size();
   }
@@ -198,7 +200,7 @@ void HeapRegion::set_closed_archive() {
 void HeapRegion::set_starts_humongous(HeapWord* obj_top, size_t fill_size) {
   assert(!is_humongous(), "sanity / pre-condition");
   assert(top() == bottom(), "should be empty");
-printf("h s\n"); //cgmin
+//printf("h s\n"); //cgmin
   report_region_type_change(G1HeapRegionTraceType::StartsHumongous);
   _type.set_starts_humongous();
   _humongous_start_region = this;

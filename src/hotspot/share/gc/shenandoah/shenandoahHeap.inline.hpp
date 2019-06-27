@@ -301,7 +301,6 @@ inline oop ShenandoahHeap::evacuate_object(oop p, Thread* thread) {
   // Copy the object and initialize its forwarding ptr:
   HeapWord* copy = filler + ShenandoahBrooksPointer::word_size();
   oop copy_val = oop(copy);
-
   Copy::aligned_disjoint_words((HeapWord*) p, copy, size_no_fwdptr);
   ShenandoahBrooksPointer::initialize(oop(copy));
 

@@ -45,7 +45,7 @@ private:
 public:
   G1FullGCCompactTask(G1FullCollector* collector) :
     G1FullGCTask("G1 Compact Task", collector),
-    _claimer(collector->workers()) { }
+    _claimer(collector->workers()) { } 
   void work(uint worker_id);
   void serial_compaction();
 
@@ -53,8 +53,18 @@ public:
     G1CMBitMap* _bitmap;
 
   public:
-    G1CompactRegionClosure(G1CMBitMap* bitmap) : _bitmap(bitmap) { }
+    G1CompactRegionClosure(G1CMBitMap* bitmap) : _bitmap(bitmap) {
+t2_sum = 0;
+cgmin_s2 = cgmin_b2 = s2_sum = b2_sum = 0;
+ }
+~G1CompactRegionClosure() {
+// printf("T %d\n",t2_sum);
+//printf("S %d %d %d %d\n",cgmin_s2,s2_sum,cgmin_b2,b2_sum);
+ }
+
     size_t apply(oop object);
+int t2_sum; //cgmin
+int cgmin_s2,cgmin_b2,s2_sum,b2_sum;
   };
 };
 

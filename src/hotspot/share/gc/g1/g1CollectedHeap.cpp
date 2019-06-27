@@ -392,7 +392,7 @@ HeapWord* G1CollectedHeap::allocate_new_tlab(size_t min_size,
                                              size_t* actual_size) {
   assert_heap_not_locked_and_not_at_safepoint();
   assert(!is_humongous(requested_size), "we do not allow humongous TLABs");
-
+//printf("allcate_new_tlab %d\n",(int)requested_size); //cgmin
   return attempt_allocation(min_size, requested_size, actual_size);
 }
 
@@ -400,7 +400,7 @@ HeapWord*
 G1CollectedHeap::mem_allocate(size_t word_size,
                               bool*  gc_overhead_limit_was_exceeded) {
   assert_heap_not_locked_and_not_at_safepoint();
-
+//printf("mem_allocate %d\n",(int)word_size); //cgmin
   if (is_humongous(word_size)) {
     return attempt_allocation_humongous(word_size);
   }

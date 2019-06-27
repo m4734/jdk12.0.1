@@ -57,7 +57,7 @@ G1ParScanThreadState::G1ParScanThreadState(G1CollectedHeap* g1h,
     _old_gen_is_full(false),
     _num_optional_regions(optional_cset_length)
 {
-cgmin_s = cgmin_b = s_sum = b_sum = 0;//cgmin init
+cgmin_s = cgmin_b = s_sum = b_sum = t_sum = 0;//cgmin init
   // we allocate G1YoungSurvRateNumRegions plus one entries, since
   // we "sacrifice" entry 0 to keep track of surviving bytes for
   // non-young regions (where the age is -1)
@@ -105,7 +105,9 @@ G1ParScanThreadState::~G1ParScanThreadState() {
   delete _closures;
   FREE_C_HEAP_ARRAY(size_t, _surviving_young_words_base);
   delete[] _oops_into_optional_regions;
-printf("g1psts s %d %d b %d %d\n",cgmin_s,s_sum,cgmin_b,b_sum); //cgmin cnt
+//printf("S %d %d %d %d\n",cgmin_s,s_sum,cgmin_b,b_sum); //cgmin cnt
+//printf("T %d\n",t_sum);
+
 }
 
 void G1ParScanThreadState::waste(size_t& wasted, size_t& undo_wasted) {
@@ -270,24 +272,33 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   }
 #endif // !PRODUCT
 
-  // We're going to allocate linearly, so might as well prefetch ahead.
+  // We're going to allocate linearly, so might as well prefetch ahead.\
+
+//Ticks start = Ticks::now();
+struct timeval tv,tv2;
+gettimeofday(&tv,NULL);
   Prefetch::write(obj_ptr, PrefetchCopyIntervalInBytes);
 
   const oop obj = oop(obj_ptr);
   const oop forward_ptr = old->forward_to_atomic(obj, old_mark, memory_order_relaxed);
   if (forward_ptr == NULL) {
     Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz);
+gettimeofday(&tv2,NULL);
+t_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
+//Tickspan time = Ticks::now()-start;
+//t_sum+=time.seconds();
 //printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
 if (word_sz >= 512)
 {
 ++cgmin_b;
 b_sum+=word_sz;
-printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+//printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
 }
 else
 {
 ++cgmin_s;
 s_sum+=word_sz;
+//printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
 }
 //	printf("%d\n",(int)word_sz);
     if (dest_state.is_young()) {

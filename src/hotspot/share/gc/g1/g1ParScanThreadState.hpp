@@ -142,6 +142,8 @@ public:
 //cgmin cnt
 int cgmin_b,b_sum;
 int cgmin_s,s_sum;
+int t_sum;
+//int t4_sum;
 
 private:
   #define G1_PARTIAL_ARRAY_MASK 0x2

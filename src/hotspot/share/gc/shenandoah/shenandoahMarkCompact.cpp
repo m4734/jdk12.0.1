@@ -734,7 +734,6 @@ void ShenandoahMarkCompact::compact_humongous_objects() {
       }
 
       assert (r->is_move_allowed(), "should be movable");
-
       Copy::aligned_conjoint_words(heap->get_region(old_start)->bottom(),
                                    heap->get_region(new_start)->bottom(),
                                    ShenandoahHeapRegion::region_size_words()*num_regions);
