@@ -425,13 +425,24 @@ HeapWord* G1CollectedHeap::attempt_allocation_slow(size_t word_size) {
   // fails to perform the allocation. b) is the only case when we'll
   // return NULL.
   HeapWord* result = NULL;
+
+	G1Allocator *__allocator; //cgmin
+	if (word_size < 512)// || true)
+			__allocator = _allocator;
+	else
+	{
+			word_size = ((word_size-1)/512+1)*512;
+			__allocator = _allocator4k;
+	}
+
   for (uint try_count = 1, gclocker_retry_count = 0; /* we'll return */; try_count += 1) {
     bool should_try_gc;
     uint gc_count_before;
 
     {
       MutexLockerEx x(Heap_lock);
-      result = _allocator->attempt_allocation_locked(word_size);
+//      result = _allocator->attempt_allocation_locked(word_size);
+      result = __allocator->attempt_allocation_locked(word_size);
       if (result != NULL) {
         return result;
       }
@@ -442,7 +453,8 @@ HeapWord* G1CollectedHeap::attempt_allocation_slow(size_t word_size) {
       if (GCLocker::is_active_and_needs_gc() && g1_policy()->can_expand_young_list()) {
         // No need for an ergo message here, can_expand_young_list() does this when
         // it returns true.
-        result = _allocator->attempt_allocation_force(word_size);
+//        result = _allocator->attempt_allocation_force(word_size);
+        result = __allocator->attempt_allocation_force(word_size);
         if (result != NULL) {
           return result;
         }
@@ -499,7 +511,8 @@ HeapWord* G1CollectedHeap::attempt_allocation_slow(size_t word_size) {
     // follow-on attempt will be at the start of the next loop
     // iteration (after taking the Heap_lock).
     size_t dummy = 0;
-    result = _allocator->attempt_allocation(word_size, word_size, &dummy);
+//    result = _allocator->attempt_allocation(word_size, word_size, &dummy);
+    result = __allocator->attempt_allocation(word_size, word_size, &dummy);
     if (result != NULL) {
       return result;
     }
@@ -735,7 +748,17 @@ inline HeapWord* G1CollectedHeap::attempt_allocation(size_t min_word_size,
   assert(!is_humongous(desired_word_size), "attempt_allocation() should not "
          "be called for humongous allocation requests");
 
-  HeapWord* result = _allocator->attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+//  HeapWord* result = _allocator->attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+
+	HeapWord* result;
+	if (desired_word_size < 512)// || true) //cgmin
+	  result = _allocator->attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+	else
+	{
+			size_t word_size_4k=((desired_word_size-1)/512+1)*512;
+	  result = _allocator4k->attempt_allocation(word_size_4k, word_size_4k, actual_word_size);
+	}
+
 
   if (result == NULL) {
     *actual_word_size = desired_word_size;
@@ -954,12 +977,18 @@ HeapWord* G1CollectedHeap::attempt_allocation_humongous(size_t word_size) {
 
 HeapWord* G1CollectedHeap::attempt_allocation_at_safepoint(size_t word_size,
                                                            bool expect_null_mutator_alloc_region) {
+		//cgmin
+		G1Allocator* __allocator;
+		if (word_size < 512)// || true)
+				__allocator = _allocator;
+		else
+				__allocator = _allocator4k;
   assert_at_safepoint_on_vm_thread();
-  assert(!_allocator->has_mutator_alloc_region() || !expect_null_mutator_alloc_region,
+  assert(!__allocator->has_mutator_alloc_region() || !expect_null_mutator_alloc_region,
          "the current alloc region was unexpectedly found to be non-NULL");
 
   if (!is_humongous(word_size)) {
-    return _allocator->attempt_allocation_locked(word_size);
+    return __allocator->attempt_allocation_locked(word_size);
   } else {
     HeapWord* result = humongous_obj_allocate(word_size);
     if (result != NULL && g1_policy()->need_to_start_conc_mark("STW humongous allocation")) {
@@ -1017,6 +1046,10 @@ void G1CollectedHeap::prepare_heap_for_full_collection() {
   _allocator->release_mutator_alloc_region();
   _allocator->abandon_gc_alloc_regions();
 
+	//cgmin
+  _allocator4k->release_mutator_alloc_region();
+  _allocator4k->abandon_gc_alloc_regions();
+
   // We may have added regions to the current incremental collection
   // set between the last GC or pause and now. We need to clear the
   // incremental collection set and then start rebuilding it afresh
@@ -1059,6 +1092,7 @@ void G1CollectedHeap::prepare_heap_for_mutators() {
   start_new_collection_set();
 
   _allocator->init_mutator_alloc_region();
+	_allocator4k->init_mutator_alloc_region(); //cgmin
 
   // Post collection state updates.
   MetaspaceGC::compute_new_size();
@@ -1404,6 +1438,7 @@ void G1CollectedHeap::shrink(size_t shrink_bytes) {
   // means we should not not be holding to any GC alloc regions. The method
   // below will make sure of that and do any remaining clean up.
   _allocator->abandon_gc_alloc_regions();
+  _allocator4k->abandon_gc_alloc_regions();//cgmin
 
   // Instead of tearing down / rebuilding the free lists here, we
   // could instead use the remove_all_pending() method on free_list to
@@ -1492,6 +1527,7 @@ G1CollectedHeap::G1CollectedHeap(G1CollectorPolicy* collector_policy) :
   _listener(),
   _hrm(NULL),
   _allocator(NULL),
+	_allocator4k(NULL),//cgmin
   _verifier(NULL),
   _summary_bytes_used(0),
   _archive_allocator(NULL),
@@ -1538,6 +1574,7 @@ G1CollectedHeap::G1CollectedHeap(G1CollectorPolicy* collector_policy) :
   _verifier = new G1HeapVerifier(this);
 
   _allocator = new G1Allocator(this);
+	_allocator4k = new G1Allocator(this);//cgmin
 
   _heap_sizing_policy = G1HeapSizingPolicy::create(this, _g1_policy->analytics());
 
@@ -1830,6 +1867,7 @@ jint G1CollectedHeap::initialize() {
   G1AllocRegion::setup(this, dummy_region);
 
   _allocator->init_mutator_alloc_region();
+	_allocator4k->init_mutator_alloc_region();//cgmin
 
   // Do create of the monitoring and management support so that
   // values in the heap have been properly initialized.
@@ -1971,7 +2009,8 @@ void G1CollectedHeap::iterate_dirty_card_closure(CardTableEntryClosure* cl, uint
 
 // Computes the sum of the storage used by the various regions.
 size_t G1CollectedHeap::used() const {
-  size_t result = _summary_bytes_used + _allocator->used_in_alloc_regions();
+//  size_t result = _summary_bytes_used + _allocator->used_in_alloc_regions();
+  size_t result = _summary_bytes_used + _allocator->used_in_alloc_regions() + _allocator4k->used_in_alloc_regions(); //cgmin
   if (_archive_allocator != NULL) {
     result += _archive_allocator->used();
   }
@@ -3005,6 +3044,8 @@ G1CollectedHeap::do_collection_pause_at_safepoint(double target_pause_time_ms) {
         // Forget the current alloc region (we might even choose it to be part
         // of the collection set!).
         _allocator->release_mutator_alloc_region();
+				_allocator4k->release_mutator_alloc_region();
+			
 
         // This timing is only used by the ergonomics to handle our pause target.
         // It is unclear why this should not include the full pause. We will
@@ -3041,6 +3082,7 @@ G1CollectedHeap::do_collection_pause_at_safepoint(double target_pause_time_ms) {
 
         // Initialize the GC alloc regions.
         _allocator->init_gc_alloc_regions(evacuation_info);
+        _allocator4k->init_gc_alloc_regions(evacuation_info);
 
         G1ParScanThreadStateSet per_thread_states(this,
                                                   workers()->active_workers(),
@@ -3099,6 +3141,7 @@ G1CollectedHeap::do_collection_pause_at_safepoint(double target_pause_time_ms) {
         allocate_dummy_regions();
 
         _allocator->init_mutator_alloc_region();
+        _allocator4k->init_mutator_alloc_region();
 
         {
           size_t expand_bytes = _heap_sizing_policy->expansion_amount();
@@ -3948,6 +3991,7 @@ void G1CollectedHeap::post_evacuate_collection_set(EvacuationInfo& evacuation_in
   _preserved_marks_set.assert_empty();
 
   _allocator->release_gc_alloc_regions(evacuation_info);
+  _allocator4k->release_gc_alloc_regions(evacuation_info);
 
   merge_per_thread_state_info(per_thread_states);
 
@@ -4480,7 +4524,8 @@ void G1CollectedHeap::abandon_collection_set(G1CollectionSet* collection_set) {
 }
 
 bool G1CollectedHeap::is_old_gc_alloc_region(HeapRegion* hr) {
-  return _allocator->is_retained_old_region(hr);
+//  return _allocator->is_retained_old_region(hr);
+  return _allocator->is_retained_old_region(hr) || _allocator4k->is_retained_old_region(hr);
 }
 
 void G1CollectedHeap::set_region_short_lived_locked(HeapRegion* hr) {

@@ -55,6 +55,9 @@ private:
   // old objects.
   OldGCAllocRegion _old_gc_alloc_region;
 
+	//cgmin modify here
+
+
   HeapRegion* _retained_old_gc_alloc_region;
 
   bool survivor_is_full() const;

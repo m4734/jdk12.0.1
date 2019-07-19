@@ -30,7 +30,11 @@
 #include "logging/log.hpp"
 #include "runtime/thread.hpp"
 #include "utilities/copy.hpp"
-
+/*
+inline void ThreadLocalAllocBuffer::set_4k(bool in_4k) {
+		_4k = in_4k;
+} //cgmin
+*/
 inline HeapWord* ThreadLocalAllocBuffer::allocate(size_t size) {
   invariants();
   HeapWord* obj = top();

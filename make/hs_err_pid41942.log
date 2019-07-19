@@ -1,0 +1,355 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  SIGSEGV (0xb) at pc=0x00002b71f95b3ee9, pid=41942, tid=41952
+#
+# JRE version:  (12.0.1) (build )
+# Java VM: OpenJDK 64-Bit Server VM (12.0.1-internal+0-adhoc.root.jdk12.0.1, mixed mode, tiered, compressed oops, serial gc, linux-amd64)
+# Problematic frame:
+# V  [libjvm.so+0xb3fee9]  ObjArrayAllocator::initialize(HeapWord*) const+0x29
+#
+# No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.java.com/bugreport/crash.jsp
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Dapplication.home=/home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk -Xms8m -XX:+UseSerialGC -Xms32M -Xmx512M -XX:TieredStopAtLevel=1 -Djdk.module.main=jdk.jlink jdk.jlink/jdk.tools.jmod.Main create --module-version 12.0.1-internal --target-platform linux-amd64 --module-path /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/images/jmods --class-path /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/modules/jdk.localedata --legal-notices /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/support/modules_legal/common:/home/dcslab/cgmin/jdk12.0.1/src/jdk.localedata/share/legal --exclude **{_the.*,_*.marker,*.diz,*.debuginfo,*.dSYM/**,*.dSYM,*.pdb,*.map} /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/support/jmods/jdk.localedata.jmod
+
+Host: Intel(R) Xeon(R) CPU E5-2650 v4 @ 2.20GHz, 48 cores, 124G, CentOS Linux release 7.6.1810 (Core) 
+Time: Thu Jul 18 18:46:26 2019 KST elapsed time: 0 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00002b71fc010000):  JavaThread "Unknown thread" [_thread_in_vm, id=41952, stack(0x00002b71f7c76000,0x00002b71f7d77000)]
+
+Stack: [0x00002b71f7c76000,0x00002b71f7d77000],  sp=0x00002b71f7d759c0,  free space=1022k
+Native frames: (J=compiled Java code, A=aot compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [libjvm.so+0xb3fee9]  ObjArrayAllocator::initialize(HeapWord*) const+0x29
+V  [libjvm.so+0xb40743]  MemAllocator::allocate() const+0x73
+V  [libjvm.so+0x6154c4]  CollectedHeap::array_allocate(Klass*, int, int, bool, Thread*)+0x44
+V  [libjvm.so+0xe3fd5f]  SystemDictionary::initialize(Thread*)+0x10f
+V  [libjvm.so+0xeb7fe5]  Universe::genesis(Thread*)+0x2a5
+V  [libjvm.so+0xeb912c]  universe2_init()+0x2c
+V  [libjvm.so+0x851d7a]  init_globals()+0xaa
+V  [libjvm.so+0xe91d4c]  Threads::create_vm(JavaVMInitArgs*, bool*)+0x4bc
+V  [libjvm.so+0x908c88]  JNI_CreateJavaVM+0x58
+C  [libjli.so+0x4814]  JavaMain+0x84
+
+
+siginfo: si_signo: 11 (SIGSEGV), si_code: 1 (SEGV_MAPERR), si_addr: 0x0000000000000045
+
+Registers:
+RAX=0x0000000000000001, RBX=0x0000000000000039, RCX=0x0000000000000049, RDX=0x00002b71f9f7cc50
+RSP=0x00002b71f7d759c0, RBP=0x00002b71f7d759e0, RSI=0x0000000000000039, RDI=0x00002b71f7d75a70
+R8 =0x0000000000000001, R9 =0x00002b71fc010000, R10=0x00002b71f9089480, R11=0x0000000000001000
+R12=0x00002b71f7d75a70, R13=0x00002b71f9ffcc44, R14=0x00002b71fc00eb10, R15=0x00002b71fa044720
+RIP=0x00002b71f95b3ee9, EFLAGS=0x0000000000010202, CSGSFS=0x002b000000000033, ERR=0x0000000000000006
+  TRAPNO=0x000000000000000e
+
+Top of Stack: (sp=0x00002b71f7d759c0)
+0x00002b71f7d759c0:   00002b71fa044720 00002b71f7d75a70
+0x00002b71f7d759d0:   00002b71fc010000 00002b71f7d75a00
+0x00002b71f7d759e0:   00002b71f7d75a60 00002b71f95b4743
+0x00002b71f7d759f0:   00002b71fc0370d0 0000000000000000 
+
+Instructions: (pc=0x00002b71f95b3ee9)
+0x00002b71f95b3ec9:   89 fc 53 48 89 f3 48 83 ec 08 80 7f 2c 00 4c 8d
+0x00002b71f95b3ed9:   2d 66 8d a4 00 41 0f b6 45 00 74 2e 84 c0 74 07
+0x00002b71f95b3ee9:   c7 46 0c 00 00 00 00 49 8b 54 24 20 48 83 fa 02
+0x00002b71f95b3ef9:   74 18 48 8d 14 d5 f0 ff ff ff 48 8d 7b 10 31 f6 
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x00002b71fa043c40, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+
+Other Threads:
+
+=>0x00002b71fc010000 (exited) JavaThread "Unknown thread" [_thread_in_vm, id=41952, stack(0x00002b71f7c76000,0x00002b71f7d77000)]
+
+Threads with active compile tasks:
+
+VM state:not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap address: 0x00000000e0000000, size: 512 MB, Compressed Oops mode: 32-bit
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 3
+Compressed class space size: 1073741824 Address: 0x0000000100000000
+
+GC Heap History (0 events):
+No events
+
+Deoptimization events (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+Events (0 events):
+No events
+
+
+Dynamic libraries:
+00400000-00401000 r-xp 00000000 fd:02 233300582                          /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/bin/jmod
+00601000-00602000 r--p 00001000 fd:02 233300582                          /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/bin/jmod
+00602000-00603000 rw-p 00002000 fd:02 233300582                          /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/bin/jmod
+023af000-023d0000 rw-p 00000000 00:00 0                                  [heap]
+e0000000-e0aa0000 rw-p 00000000 00:00 0 
+e0aa0000-eaaa0000 ---p 00000000 00:00 0 
+eaaa0000-ec000000 rw-p 00000000 00:00 0 
+ec000000-100000000 ---p 00000000 00:00 0 
+100000000-100060000 rw-p 00000000 00:00 0 
+100060000-140000000 ---p 00000000 00:00 0 
+2b71f7c3d000-2b71f7c5f000 r-xp 00000000 fd:00 67116101                   /usr/lib64/ld-2.17.so
+2b71f7c5f000-2b71f7c60000 rw-p 00000000 00:00 0 
+2b71f7c60000-2b71f7c62000 ---p 00000000 00:00 0 
+2b71f7c62000-2b71f7c63000 r--p 00000000 00:00 0 
+2b71f7c63000-2b71f7c6b000 rw-s 00000000 fd:00 67645911                   /tmp/hsperfdata_root/41942
+2b71f7c6b000-2b71f7c6d000 rw-p 00000000 00:00 0 
+2b71f7c71000-2b71f7c76000 rw-p 00000000 00:00 0 
+2b71f7c76000-2b71f7c7a000 ---p 00000000 00:00 0 
+2b71f7c7a000-2b71f7d7c000 rw-p 00000000 00:00 0 
+2b71f7d7c000-2b71f7d92000 ---p 00000000 00:00 0 
+2b71f7d92000-2b71f7d9d000 rw-p 00000000 00:00 0 
+2b71f7d9d000-2b71f7e3d000 ---p 00000000 00:00 0 
+2b71f7e3d000-2b71f7e5e000 rw-p 00000000 00:00 0 
+2b71f7e5e000-2b71f7e5f000 r--p 00021000 fd:00 67116101                   /usr/lib64/ld-2.17.so
+2b71f7e5f000-2b71f7e60000 rw-p 00022000 fd:00 67116101                   /usr/lib64/ld-2.17.so
+2b71f7e60000-2b71f7e61000 rw-p 00000000 00:00 0 
+2b71f7e61000-2b71f7e76000 r-xp 00000000 fd:00 67116158                   /usr/lib64/libz.so.1.2.7
+2b71f7e76000-2b71f8075000 ---p 00015000 fd:00 67116158                   /usr/lib64/libz.so.1.2.7
+2b71f8075000-2b71f8076000 r--p 00014000 fd:00 67116158                   /usr/lib64/libz.so.1.2.7
+2b71f8076000-2b71f8077000 rw-p 00015000 fd:00 67116158                   /usr/lib64/libz.so.1.2.7
+2b71f8077000-2b71f8086000 r-xp 00000000 fd:02 233283259                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjli.so
+2b71f8086000-2b71f8285000 ---p 0000f000 fd:02 233283259                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjli.so
+2b71f8285000-2b71f8286000 r--p 0000e000 fd:02 233283259                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjli.so
+2b71f8286000-2b71f8287000 rw-p 0000f000 fd:02 233283259                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjli.so
+2b71f8287000-2b71f829e000 r-xp 00000000 fd:00 67527458                   /usr/lib64/libpthread-2.17.so
+2b71f829e000-2b71f849d000 ---p 00017000 fd:00 67527458                   /usr/lib64/libpthread-2.17.so
+2b71f849d000-2b71f849e000 r--p 00016000 fd:00 67527458                   /usr/lib64/libpthread-2.17.so
+2b71f849e000-2b71f849f000 rw-p 00017000 fd:00 67527458                   /usr/lib64/libpthread-2.17.so
+2b71f849f000-2b71f84a3000 rw-p 00000000 00:00 0 
+2b71f84a3000-2b71f84a5000 r-xp 00000000 fd:00 67412311                   /usr/lib64/libdl-2.17.so
+2b71f84a5000-2b71f86a5000 ---p 00002000 fd:00 67412311                   /usr/lib64/libdl-2.17.so
+2b71f86a5000-2b71f86a6000 r--p 00002000 fd:00 67412311                   /usr/lib64/libdl-2.17.so
+2b71f86a6000-2b71f86a7000 rw-p 00003000 fd:00 67412311                   /usr/lib64/libdl-2.17.so
+2b71f86a7000-2b71f8869000 r-xp 00000000 fd:00 67116114                   /usr/lib64/libc-2.17.so
+2b71f8869000-2b71f8a69000 ---p 001c2000 fd:00 67116114                   /usr/lib64/libc-2.17.so
+2b71f8a69000-2b71f8a6d000 r--p 001c2000 fd:00 67116114                   /usr/lib64/libc-2.17.so
+2b71f8a6d000-2b71f8a6f000 rw-p 001c6000 fd:00 67116114                   /usr/lib64/libc-2.17.so
+2b71f8a6f000-2b71f8a74000 rw-p 00000000 00:00 0 
+2b71f8a74000-2b71f9cb9000 r-xp 00000000 fd:02 149929323                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/server/libjvm.so
+2b71f9cb9000-2b71f9eb9000 ---p 01245000 fd:02 149929323                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/server/libjvm.so
+2b71f9eb9000-2b71f9f8e000 r--p 01245000 fd:02 149929323                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/server/libjvm.so
+2b71f9f8e000-2b71f9fca000 rw-p 0131a000 fd:02 149929323                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/server/libjvm.so
+2b71f9fca000-2b71fa050000 rw-p 00000000 00:00 0 
+2b71fa050000-2b71fa139000 r-xp 00000000 fd:00 67349699                   /usr/lib64/libstdc++.so.6.0.19
+2b71fa139000-2b71fa338000 ---p 000e9000 fd:00 67349699                   /usr/lib64/libstdc++.so.6.0.19
+2b71fa338000-2b71fa340000 r--p 000e8000 fd:00 67349699                   /usr/lib64/libstdc++.so.6.0.19
+2b71fa340000-2b71fa342000 rw-p 000f0000 fd:00 67349699                   /usr/lib64/libstdc++.so.6.0.19
+2b71fa342000-2b71fa357000 rw-p 00000000 00:00 0 
+2b71fa357000-2b71fa458000 r-xp 00000000 fd:00 67412312                   /usr/lib64/libm-2.17.so
+2b71fa458000-2b71fa657000 ---p 00101000 fd:00 67412312                   /usr/lib64/libm-2.17.so
+2b71fa657000-2b71fa658000 r--p 00100000 fd:00 67412312                   /usr/lib64/libm-2.17.so
+2b71fa658000-2b71fa659000 rw-p 00101000 fd:00 67412312                   /usr/lib64/libm-2.17.so
+2b71fa659000-2b71fa66e000 r-xp 00000000 fd:00 67349682                   /usr/lib64/libgcc_s-4.8.5-20150702.so.1
+2b71fa66e000-2b71fa86d000 ---p 00015000 fd:00 67349682                   /usr/lib64/libgcc_s-4.8.5-20150702.so.1
+2b71fa86d000-2b71fa86e000 r--p 00014000 fd:00 67349682                   /usr/lib64/libgcc_s-4.8.5-20150702.so.1
+2b71fa86e000-2b71fa86f000 rw-p 00015000 fd:00 67349682                   /usr/lib64/libgcc_s-4.8.5-20150702.so.1
+2b71fa86f000-2b71fa87c000 r-xp 00000000 fd:02 233283245                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libverify.so
+2b71fa87c000-2b71faa7b000 ---p 0000d000 fd:02 233283245                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libverify.so
+2b71faa7b000-2b71faa7d000 r--p 0000c000 fd:02 233283245                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libverify.so
+2b71faa7d000-2b71faa7e000 rw-p 0000e000 fd:02 233283245                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libverify.so
+2b71faa7e000-2b71faaa6000 r-xp 00000000 fd:02 233283260                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjava.so
+2b71faaa6000-2b71faca5000 ---p 00028000 fd:02 233283260                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjava.so
+2b71faca5000-2b71faca6000 r--p 00027000 fd:02 233283260                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjava.so
+2b71faca6000-2b71faca8000 rw-p 00028000 fd:02 233283260                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjava.so
+2b71faca8000-2b71facb4000 r-xp 00000000 fd:00 67527450                   /usr/lib64/libnss_files-2.17.so
+2b71facb4000-2b71faeb3000 ---p 0000c000 fd:00 67527450                   /usr/lib64/libnss_files-2.17.so
+2b71faeb3000-2b71faeb4000 r--p 0000b000 fd:00 67527450                   /usr/lib64/libnss_files-2.17.so
+2b71faeb4000-2b71faeb5000 rw-p 0000c000 fd:00 67527450                   /usr/lib64/libnss_files-2.17.so
+2b71faeb5000-2b71faebb000 rw-p 00000000 00:00 0 
+2b71faebb000-2b71faec2000 r-xp 00000000 fd:02 233283271                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libzip.so
+2b71faec2000-2b71fb0c1000 ---p 00007000 fd:02 233283271                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libzip.so
+2b71fb0c1000-2b71fb0c2000 r--p 00006000 fd:02 233283271                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libzip.so
+2b71fb0c2000-2b71fb0c3000 rw-p 00007000 fd:02 233283271                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libzip.so
+2b71fb0c3000-2b71fb0c8000 r-xp 00000000 fd:02 233283273                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjimage.so
+2b71fb0c8000-2b71fb2c8000 ---p 00005000 fd:02 233283273                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjimage.so
+2b71fb2c8000-2b71fb2c9000 r--p 00005000 fd:02 233283273                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjimage.so
+2b71fb2c9000-2b71fb2ca000 rw-p 00006000 fd:02 233283273                  /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/lib/libjimage.so
+2b71fb2ca000-2b71fb2cf000 rw-p 00000000 00:00 0 
+2b71fb2cf000-2b71fb490000 ---p 00000000 00:00 0 
+2b71fb490000-2b71fb496000 rw-p 00000000 00:00 0 
+2b71fb496000-2b71fb4e5000 ---p 00000000 00:00 0 
+2b71fb4e5000-2b71fb4f0000 rw-p 00000000 00:00 0 
+2b71fb4f0000-2b71fb590000 ---p 00000000 00:00 0 
+2b71fb590000-2b71fb9b2000 rw-p 00000000 00:00 0 
+2b71fb9b2000-2b71fbdb2000 ---p 00000000 00:00 0 
+2b71fbdb2000-2b71fbecf000 rw-p 00000000 00:00 0 
+2b71fc000000-2b71fc043000 rw-p 00000000 00:00 0 
+2b71fc043000-2b7200000000 ---p 00000000 00:00 0 
+2b7200000000-2b7200270000 rwxp 00000000 00:00 0 
+2b7200270000-2b7200d40000 ---p 00000000 00:00 0 
+2b7200d40000-2b7200fb0000 rwxp 00000000 00:00 0 
+2b7200fb0000-2b720f000000 ---p 00000000 00:00 0 
+2b720f000000-2b720f3f6000 rw-p 00000000 00:00 0 
+7ffc262d2000-7ffc262f4000 rw-p 00000000 00:00 0                          [stack]
+7ffc2638c000-7ffc2638f000 r--p 00000000 00:00 0                          [vvar]
+7ffc2638f000-7ffc26391000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+
+
+VM Arguments:
+jvm_args: -Dapplication.home=/home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk -Xms8m -XX:+UseSerialGC -Xms32M -Xmx512M -XX:TieredStopAtLevel=1 -Djdk.module.main=jdk.jlink 
+java_command: jdk.jlink/jdk.tools.jmod.Main create --module-version 12.0.1-internal --target-platform linux-amd64 --module-path /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/images/jmods --class-path /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/jdk/modules/jdk.localedata --legal-notices /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/support/modules_legal/common:/home/dcslab/cgmin/jdk12.0.1/src/jdk.localedata/share/legal --exclude **{_the.*,_*.marker,*.diz,*.debuginfo,*.dSYM/**,*.dSYM,*.pdb,*.map} /home/dcslab/cgmin/jdk12.0.1/build/linux-x86_64-server-release/support/jmods/jdk.localedata.jmod
+java_class_path (initial): <not set>
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 15                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 33554432                                  {product} {command line}
+   size_t MaxHeapSize                              = 536870912                                 {product} {command line}
+   size_t MaxNewSize                               = 178913280                                 {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 196608                                    {product} {ergonomic}
+   size_t NewSize                                  = 11141120                                  {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 13893620                               {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 237764620                              {pd product} {ergonomic}
+   size_t OldSize                                  = 22413312                                  {product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 0                                      {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+     intx TieredStopAtLevel                        = 1                                         {product} {command line}
+     bool UseCompressedClassPointers               = true                                 {lp64_product} {ergonomic}
+     bool UseCompressedOops                        = true                                 {lp64_product} {ergonomic}
+     bool UseSerialGC                              = true                                      {product} {command line}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags
+ #1: stderr all=off uptime,level,tags
+
+Environment Variables:
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+USERNAME=root
+LD_LIBRARY_PATH=:/usr/local/lib
+SHELL=/bin/bash
+
+Signal Handlers:
+SIGSEGV: [libjvm.so+0xefc070], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGBUS: [libjvm.so+0xefc070], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGFPE: [libjvm.so+0xefc070], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGPIPE: [libjvm.so+0xbf1440], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGXFSZ: [libjvm.so+0xbf1440], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGILL: [libjvm.so+0xefc070], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGUSR2: [libjvm.so+0xbf12e0], sa_mask[0]=00000000000000000000000000000000, sa_flags=SA_RESTART|SA_SIGINFO
+SIGHUP: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGINT: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGTERM: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGQUIT: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+
+
+---------------  S Y S T E M  ---------------
+
+OS:CentOS Linux release 7.6.1810 (Core) 
+uname:Linux 4.12.9RTFM0227+ #988 SMP Thu May 30 20:11:32 KST 2019 x86_64
+libc:glibc 2.17 NPTL 2.17 
+rlimit: STACK infinity, CORE 0k, NPROC 510968, NOFILE 4096, AS infinity, DATA infinity, FSIZE infinity
+load average:0.77 2.52 5.10
+
+/proc/meminfo:
+MemTotal:       130865364 kB
+MemFree:        122398360 kB
+MemAvailable:   127256244 kB
+Buffers:            2120 kB
+Cached:          6085020 kB
+SwapCached:            0 kB
+Active:          4169796 kB
+Inactive:        2346232 kB
+Active(anon):     749620 kB
+Inactive(anon):   189428 kB
+Active(file):    3420176 kB
+Inactive(file):  2156804 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:            544256 kB
+Writeback:        186496 kB
+AnonPages:        427492 kB
+Mapped:           259600 kB
+Shmem:            510160 kB
+Slab:             812616 kB
+SReclaimable:     462936 kB
+SUnreclaim:       349680 kB
+KernelStack:       15088 kB
+PageTables:        22072 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    65432680 kB
+Committed_AS:    1726552 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+HardwareCorrupted:     0 kB
+CmaTotal:              0 kB
+CmaFree:               0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:      826164 kB
+DirectMap2M:     9543680 kB
+DirectMap1G:    125829120 kB
+
+
+/proc/sys/kernel/threads-max (system-wide limit on the number of threads):
+1021936
+
+
+/proc/sys/vm/max_map_count (maximum number of memory map areas a process may have):
+65530
+
+
+/proc/sys/kernel/pid_max (system-wide limit on number of process identifiers):
+49152
+
+
+
+container (cgroup) information:
+container_type: cgroupv1
+cpu_cpuset_cpus: 0-47
+cpu_memory_nodes: 0
+active_processor_count: 48
+cpu_quota: -1
+cpu_period: 100000
+cpu_shares: -1
+memory_limit_in_bytes: -1
+memory_and_swap_limit_in_bytes: -1
+memory_soft_limit_in_bytes: -1
+memory_usage_in_bytes: 6681247744
+memory_max_usage_in_bytes: 0
+
+
+CPU:total 48 (initial active 48) (12 cores per cpu, 2 threads per core) family 6 model 79 stepping 1, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, avx2, aes, clmul, erms, rtm, 3dnowpref, lzcnt, ht, tsc, tscinvbit, bmi1, bmi2, adx, fma
+CPU Model and flags from /proc/cpuinfo:
+model name	: Intel(R) Xeon(R) CPU E5-2650 v4 @ 2.20GHz
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb cat_l3 cdp_l3 intel_ppin intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm cqm rdt_a rdseed adx smap xsaveopt cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local dtherm arat pln pts
+
+Memory: 4k page, physical 130865364k(122397740k free), swap 0k(0k free)
+
+vm_info: OpenJDK 64-Bit Server VM (12.0.1-internal+0-adhoc.root.jdk12.0.1) for linux-amd64 JRE (12.0.1-internal+0-adhoc.root.jdk12.0.1), built on Jul 18 2019 18:46:09 by "root" with gcc 4.8.5 20150623 (Red Hat 4.8.5-36)
+
+END.
