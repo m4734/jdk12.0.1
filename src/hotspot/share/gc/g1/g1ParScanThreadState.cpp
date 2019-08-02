@@ -47,6 +47,7 @@ G1ParScanThreadState::G1ParScanThreadState(G1CollectedHeap* g1h,
     _ct(g1h->card_table()),
     _closures(NULL),
     _plab_allocator(NULL),
+		_plab_allocator_4k(NULL), //cgmin
     _age_table(false),
     _tenuring_threshold(g1h->g1_policy()->tenuring_threshold()),
     _scanner(g1h, this),
@@ -75,6 +76,7 @@ cgmin_s = cgmin_b = s_sum = b_sum = t_sum = 0;//cgmin init
   memset(_surviving_young_words, 0, real_length * sizeof(size_t));
 
   _plab_allocator = new G1PLABAllocator(_g1h->allocator());
+	_plab_allocator_4k = new G1PLABAllocator(_g1h->allocator_4k()); //cgmin
 
   _dest[InCSetState::NotInCSet]    = InCSetState::NotInCSet;
   // The dest for Young is used when the objects are aged enough to
@@ -92,6 +94,7 @@ void G1ParScanThreadState::flush(size_t* surviving_young_words) {
   _dcq.flush();
   // Update allocation statistics.
   _plab_allocator->flush_and_retire_stats();
+	_plab_allocator_4k->flush_and_retire_stats(); //cgmin
   _g1h->g1_policy()->record_age_table(&_age_table);
 
   uint length = _g1h->collection_set()->young_region_length();
@@ -102,6 +105,7 @@ void G1ParScanThreadState::flush(size_t* surviving_young_words) {
 
 G1ParScanThreadState::~G1ParScanThreadState() {
   delete _plab_allocator;
+	delete _plab_allocator_4k;//cgmin
   delete _closures;
   FREE_C_HEAP_ARRAY(size_t, _surviving_young_words_base);
   delete[] _oops_into_optional_regions;
@@ -168,9 +172,25 @@ HeapWord* G1ParScanThreadState::allocate_in_next_plab(InCSetState const state,
   // let's keep the logic here simple. We can generalize it when necessary.
   if (dest->is_young()) {
     bool plab_refill_in_old_failed = false;
+		//cgmin
+		/*
     HeapWord* const obj_ptr = _plab_allocator->allocate(InCSetState::Old,
                                                         word_sz,
                                                         &plab_refill_in_old_failed);
+																												*/
+	  HeapWord* _obj_ptr;
+	 if (word_sz >= 512 && false) //cgmin
+		 _obj_ptr	 = _plab_allocator_4k->allocate(InCSetState::Old,
+                                                        word_sz,
+                                                        &plab_refill_in_old_failed);
+	 else
+		 _obj_ptr	 = _plab_allocator->allocate(InCSetState::Old,
+                                                        word_sz,
+                                                        &plab_refill_in_old_failed);
+
+		HeapWord* const obj_ptr = _obj_ptr;
+
+
     // Make sure that we won't attempt to copy any other objects out
     // of a survivor region (given that apparently we cannot allocate
     // any new ones) to avoid coming into this slow path again and again.
@@ -210,6 +230,7 @@ InCSetState G1ParScanThreadState::next_state(InCSetState const state, markOop co
 void G1ParScanThreadState::report_promotion_event(InCSetState const dest_state,
                                                   oop const old, size_t word_sz, uint age,
                                                   HeapWord * const obj_ptr) const {
+		//cgmin pass
   PLAB* alloc_buf = _plab_allocator->alloc_buffer(dest_state);
   if (alloc_buf->contains(obj_ptr)) {
     _g1h->_gc_tracer_stw->report_promotion_in_new_plab_event(old->klass(), word_sz * HeapWordSize, age,
@@ -238,13 +259,20 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   if (_old_gen_is_full && dest_state.is_old()) {
     return handle_evacuation_failure_par(old, old_mark);
   }
-  HeapWord* obj_ptr = _plab_allocator->plab_allocate(dest_state, word_sz);
+
+	G1PLABAllocator *__plab_allocator;
+	if (word_sz >= 512 && false) //cgmin
+			__plab_allocator = _plab_allocator_4k;
+	else
+			__plab_allocator = _plab_allocator;
+
+  HeapWord* obj_ptr = __plab_allocator->plab_allocate(dest_state, word_sz);
 
   // PLAB allocations should succeed most of the time, so we'll
   // normally check against NULL once and that's it.
   if (obj_ptr == NULL) {
     bool plab_refill_failed = false;
-    obj_ptr = _plab_allocator->allocate_direct_or_new_plab(dest_state, word_sz, &plab_refill_failed);
+    obj_ptr = __plab_allocator->allocate_direct_or_new_plab(dest_state, word_sz, &plab_refill_failed);
     if (obj_ptr == NULL) {
       obj_ptr = allocate_in_next_plab(state, &dest_state, word_sz, plab_refill_failed);
       if (obj_ptr == NULL) {
@@ -267,7 +295,7 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   if (_g1h->evacuation_should_fail()) {
     // Doing this after all the allocation attempts also tests the
     // undo_allocation() method too.
-    _plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
+    __plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
     return handle_evacuation_failure_par(old, old_mark);
   }
 #endif // !PRODUCT
@@ -348,7 +376,7 @@ s_sum+=word_sz;
     }
     return obj;
   } else {
-    _plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
+    __plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
     return forward_ptr;
   }
 }

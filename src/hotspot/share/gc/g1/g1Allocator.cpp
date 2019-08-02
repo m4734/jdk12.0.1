@@ -37,24 +37,35 @@ G1Allocator::G1Allocator(G1CollectedHeap* heap) :
   _g1h(heap),
   _survivor_is_full(false),
   _old_is_full(false),
+	_survivor_4k_is_full(false),
+	_old_4k_is_full(false),
   _mutator_alloc_region(),
   _survivor_gc_alloc_region(heap->alloc_buffer_stats(InCSetState::Young)),
   _old_gc_alloc_region(heap->alloc_buffer_stats(InCSetState::Old)),
-  _retained_old_gc_alloc_region(NULL) {
+	_mutator_alloc_region_4k(),
+	_survivor_gc_alloc_region_4k(heap->alloc_buffer_stats(InCSetState::Young)),
+	_old_gc_alloc_region_4k(heap->alloc_buffer_stats(InCSetState::Old)),
+  _retained_old_gc_alloc_region(NULL) 
+	,_retained_old_gc_alloc_region_4k(NULL) //cgmin
+	{
 }
 
 void G1Allocator::init_mutator_alloc_region() {
   assert(_mutator_alloc_region.get() == NULL, "pre-condition");
   _mutator_alloc_region.init();
+
+	_mutator_alloc_region_4k.init();
 }
 
 void G1Allocator::release_mutator_alloc_region() {
   _mutator_alloc_region.release();
   assert(_mutator_alloc_region.get() == NULL, "post-condition");
+
+	_mutator_alloc_region_4k.release();
 }
 
 bool G1Allocator::is_retained_old_region(HeapRegion* hr) {
-  return _retained_old_gc_alloc_region == hr;
+  return _retained_old_gc_alloc_region == hr || _retained_old_gc_alloc_region_4k;
 }
 
 void G1Allocator::reuse_retained_old_region(EvacuationInfo& evacuation_info,
@@ -96,29 +107,49 @@ void G1Allocator::init_gc_alloc_regions(EvacuationInfo& evacuation_info) {
   _survivor_is_full = false;
   _old_is_full = false;
 
+	_survivor_4k_is_full = false;
+	_old_4k_is_full = false;
+
   _survivor_gc_alloc_region.init();
   _old_gc_alloc_region.init();
   reuse_retained_old_region(evacuation_info,
                             &_old_gc_alloc_region,
                             &_retained_old_gc_alloc_region);
+
+	_survivor_gc_alloc_region_4k.init();
+	_old_gc_alloc_region_4k.init();
+  reuse_retained_old_region(evacuation_info,
+                            &_old_gc_alloc_region_4k,
+                            &_retained_old_gc_alloc_region_4k);
 }
 
 void G1Allocator::release_gc_alloc_regions(EvacuationInfo& evacuation_info) {
+		/*
   evacuation_info.set_allocation_regions(survivor_gc_alloc_region()->count() +
                                          old_gc_alloc_region()->count());
-  survivor_gc_alloc_region()->release();
+																				 */
+   evacuation_info.set_allocation_regions(survivor_gc_alloc_region()->count() +
+                                         old_gc_alloc_region()->count() +
+																				 survivor_gc_alloc_region_4k()->count() +
+																				 old_gc_alloc_region_4k()->count());
+ survivor_gc_alloc_region()->release();
   // If we have an old GC alloc region to release, we'll save it in
   // _retained_old_gc_alloc_region. If we don't
   // _retained_old_gc_alloc_region will become NULL. This is what we
   // want either way so no reason to check explicitly for either
   // condition.
   _retained_old_gc_alloc_region = old_gc_alloc_region()->release();
+
+	survivor_gc_alloc_region_4k()->release();
+  _retained_old_gc_alloc_region_4k = old_gc_alloc_region_4k()->release();
 }
 
 void G1Allocator::abandon_gc_alloc_regions() {
   assert(survivor_gc_alloc_region()->get() == NULL, "pre-condition");
   assert(old_gc_alloc_region()->get() == NULL, "pre-condition");
   _retained_old_gc_alloc_region = NULL;
+
+	_retained_old_gc_alloc_region_4k = NULL;
 }
 
 bool G1Allocator::survivor_is_full() const {
@@ -137,6 +168,24 @@ void G1Allocator::set_old_full() {
   _old_is_full = true;
 }
 
+bool G1Allocator::survivor_4k_is_full() const {
+  return _survivor_4k_is_full;
+}
+
+bool G1Allocator::old_4k_is_full() const {
+  return _old_4k_is_full;
+}
+
+void G1Allocator::set_survivor_4k_full() {
+  _survivor_4k_is_full = true;
+}
+
+void G1Allocator::set_old_4k_full() {
+  _old_4k_is_full = true;
+}
+
+
+
 size_t G1Allocator::unsafe_max_tlab_alloc() {
   // Return the remaining space in the cur alloc region, but not less than
   // the min TLAB size.
@@ -154,9 +203,26 @@ size_t G1Allocator::unsafe_max_tlab_alloc() {
   }
 }
 
+size_t G1Allocator::unsafe_max_tlab_alloc_4k() {
+  // Return the remaining space in the cur alloc region, but not less than
+  // the min TLAB size.
+
+  // Also, this value can be at most the humongous object threshold,
+  // since we can't allow tlabs to grow big enough to accommodate
+  // humongous objects.
+
+  HeapRegion* hr = mutator_alloc_region_4k()->get();
+  size_t max_tlab = _g1h->max_tlab_size() * wordSize;
+  if (hr == NULL) {
+    return max_tlab;
+  } else {
+    return MIN2(MAX2(hr->free(), (size_t) MinTLABSize), max_tlab);
+  }
+}
+
 size_t G1Allocator::used_in_alloc_regions() {
   assert(Heap_lock->owner() != NULL, "Should be owned on this thread's behalf.");
-  return mutator_alloc_region()->used_in_alloc_regions();
+  return mutator_alloc_region()->used_in_alloc_regions() + mutator_alloc_region_4k()->used_in_alloc_regions();
 }
 
 
@@ -179,6 +245,12 @@ HeapWord* G1Allocator::par_allocate_during_gc(InCSetState dest,
       return survivor_attempt_allocation(min_word_size, desired_word_size, actual_word_size);
     case InCSetState::Old:
       return old_attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+
+    case InCSetState::Young4k:
+      return survivor_attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+    case InCSetState::Old4k:
+      return old_attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+
     default:
       ShouldNotReachHere();
       return NULL; // Keep some compilers happy
@@ -190,10 +262,37 @@ HeapWord* G1Allocator::survivor_attempt_allocation(size_t min_word_size,
                                                    size_t* actual_word_size) {
   assert(!_g1h->is_humongous(desired_word_size),
          "we should not be seeing humongous-size allocations in this path");
-
+/*
   HeapWord* result = survivor_gc_alloc_region()->attempt_allocation(min_word_size,
                                                                     desired_word_size,
                                                                     actual_word_size);
+																																		*/
+
+  HeapWord* result;
+	if (desired_word_size >= 512)
+	{
+			int word_size_4k = ((desired_word_size-1)/512+1)*512;
+		 result =	survivor_gc_alloc_region_4k()->attempt_allocation(word_size_4k,
+                                                                    word_size_4k,
+                                                                    actual_word_size);
+
+  if (result == NULL && !survivor_4k_is_full()) {
+    MutexLockerEx x(FreeList_lock, Mutex::_no_safepoint_check_flag);
+    result = survivor_gc_alloc_region_4k()->attempt_allocation_locked(word_size_4k,
+                                                                   word_size_4k,
+                                                                   actual_word_size);
+    if (result == NULL) {
+      set_survivor_4k_full();
+    }
+  }
+
+	}
+	else
+	{
+		result	= survivor_gc_alloc_region()->attempt_allocation(min_word_size,
+                                                                    desired_word_size,
+                                                                    actual_word_size);
+
   if (result == NULL && !survivor_is_full()) {
     MutexLockerEx x(FreeList_lock, Mutex::_no_safepoint_check_flag);
     result = survivor_gc_alloc_region()->attempt_allocation_locked(min_word_size,
@@ -203,6 +302,7 @@ HeapWord* G1Allocator::survivor_attempt_allocation(size_t min_word_size,
       set_survivor_full();
     }
   }
+	}
   if (result != NULL) {
     _g1h->dirty_young_block(result, *actual_word_size);
   }
@@ -215,7 +315,26 @@ HeapWord* G1Allocator::old_attempt_allocation(size_t min_word_size,
   assert(!_g1h->is_humongous(desired_word_size),
          "we should not be seeing humongous-size allocations in this path");
 
-  HeapWord* result = old_gc_alloc_region()->attempt_allocation(min_word_size,
+  HeapWord* result;
+	if (desired_word_size >= 512)
+	{
+		int word_size_4k = ((desired_word_size-1)/512+1)*512;
+		result	= old_gc_alloc_region_4k()->attempt_allocation(word_size_4k,
+                                                               word_size_4k,
+                                                               actual_word_size);
+  if (result == NULL && !old_4k_is_full()) {
+    MutexLockerEx x(FreeList_lock, Mutex::_no_safepoint_check_flag);
+    result = old_gc_alloc_region_4k()->attempt_allocation_locked(word_size_4k,
+                                                              word_size_4k,
+                                                              actual_word_size);
+    if (result == NULL) {
+      set_old_4k_full();
+    }
+  }
+	}
+	else
+	{
+		result = old_gc_alloc_region()->attempt_allocation(min_word_size,
                                                                desired_word_size,
                                                                actual_word_size);
   if (result == NULL && !old_is_full()) {
@@ -226,7 +345,9 @@ HeapWord* G1Allocator::old_attempt_allocation(size_t min_word_size,
     if (result == NULL) {
       set_old_full();
     }
-  }
+		
+	}
+	}
   return result;
 }
 
@@ -247,13 +368,18 @@ G1PLABAllocator::G1PLABAllocator(G1Allocator* allocator) :
   _allocator(allocator),
   _surviving_alloc_buffer(_g1h->desired_plab_sz(InCSetState::Young)),
   _tenured_alloc_buffer(_g1h->desired_plab_sz(InCSetState::Old)),
+  _surviving_alloc_buffer_4k(_g1h->desired_plab_sz(InCSetState::Young)), // cgmin
+  _tenured_alloc_buffer_4k(_g1h->desired_plab_sz(InCSetState::Old)),
   _survivor_alignment_bytes(calc_survivor_alignment_bytes()) {
-  for (uint state = 0; state < InCSetState::Num; state++) {
+  for (uint state = 0; state < InCSetState::Num; state++) { //cgmin
     _direct_allocated[state] = 0;
     _alloc_buffers[state] = NULL;
   }
   _alloc_buffers[InCSetState::Young] = &_surviving_alloc_buffer;
   _alloc_buffers[InCSetState::Old]  = &_tenured_alloc_buffer;
+
+	_alloc_buffers[InCSetState::Young4k] = &_surviving_alloc_buffer_4k;
+	_alloc_buffers[InCSetState::Old4k] = &_tenured_alloc_buffer_4k;
 }
 
 bool G1PLABAllocator::may_throw_away_buffer(size_t const allocation_word_sz, size_t const buffer_size) const {
@@ -270,6 +396,15 @@ HeapWord* G1PLABAllocator::allocate_direct_or_new_plab(InCSetState dest,
   // ParallelGCBufferWastePct in the existing buffer.
   if ((required_in_plab <= plab_word_size) &&
     may_throw_away_buffer(required_in_plab, plab_word_size)) {
+
+//		if (plab_word_size >= 512) //cgmin
+		if (word_sz >= 512)		
+		{
+				dest.set_4k(true);
+//			plab_word_size = ((plab_word_size-1)/512+1)*512;
+				word_sz = ((word_sz-1)/512+1)*512;
+		
+		}
 
     PLAB* alloc_buf = alloc_buffer(dest);
     alloc_buf->retire();

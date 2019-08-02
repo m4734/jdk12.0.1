@@ -199,7 +199,7 @@ private:
 
   // Manages all allocations with regions except humongous object allocations.
   G1Allocator* _allocator;
-	G1Allocator* _allocator4k; //cgmin
+	G1Allocator* _allocator_4k; //cgmin
 
   // Manages all heap verification.
   G1HeapVerifier* _verifier;
@@ -520,6 +520,10 @@ public:
   G1Allocator* allocator() {
     return _allocator;
   }
+
+	G1Allocator* allocator_4k() {
+			return _allocator_4k;
+	}
 
   G1HeapVerifier* verifier() {
     return _verifier;

@@ -40,25 +40,67 @@ inline SurvivorGCAllocRegion* G1Allocator::survivor_gc_alloc_region() {
 inline OldGCAllocRegion* G1Allocator::old_gc_alloc_region() {
   return &_old_gc_alloc_region;
 }
+//cgmin
+inline MutatorAllocRegion* G1Allocator::mutator_alloc_region_4k() {
+  return &_mutator_alloc_region_4k;
+}
+
+inline SurvivorGCAllocRegion* G1Allocator::survivor_gc_alloc_region_4k() {
+  return &_survivor_gc_alloc_region_4k;
+}
+
+inline OldGCAllocRegion* G1Allocator::old_gc_alloc_region_4k() {
+  return &_old_gc_alloc_region_4k;
+}
 
 inline HeapWord* G1Allocator::attempt_allocation(size_t min_word_size,
                                                  size_t desired_word_size,
                                                  size_t* actual_word_size) {
+		if (desired_word_size >= 512)
+		{
+				size_t word_size_4k = ((desired_word_size-1)/512+1)*512;
+	  HeapWord* result = mutator_alloc_region_4k()->attempt_retained_allocation(word_size_4k, word_size_4k, actual_word_size);
+  if (result != NULL) {
+    return result;
+  }
+  return mutator_alloc_region_4k()->attempt_allocation(word_size_4k, word_size_4k, actual_word_size);
+	}
+		else
+		{
   HeapWord* result = mutator_alloc_region()->attempt_retained_allocation(min_word_size, desired_word_size, actual_word_size);
   if (result != NULL) {
     return result;
   }
   return mutator_alloc_region()->attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+		}
 }
 
 inline HeapWord* G1Allocator::attempt_allocation_locked(size_t word_size) {
+		if (word_size >= 512)
+		{
+				word_size = ((word_size-1)/512+1)*512;
+	  HeapWord* result = mutator_alloc_region_4k()->attempt_allocation_locked(word_size);
+  assert(result != NULL || mutator_alloc_region_4k()->get() == NULL,
+         "Must not have a mutator alloc region if there is no memory, but is " PTR_FORMAT, p2i(mutator_alloc_region_4k()->get()));
+  return result;
+	}
+		else
+		{
+		
   HeapWord* result = mutator_alloc_region()->attempt_allocation_locked(word_size);
   assert(result != NULL || mutator_alloc_region()->get() == NULL,
          "Must not have a mutator alloc region if there is no memory, but is " PTR_FORMAT, p2i(mutator_alloc_region()->get()));
   return result;
+		}
 }
 
 inline HeapWord* G1Allocator::attempt_allocation_force(size_t word_size) {
+		if (word_size >= 512)
+		{
+				word_size = ((word_size-1)/512+1)*512;
+  return mutator_alloc_region_4k()->attempt_allocation_force(word_size);
+
+		}
   return mutator_alloc_region()->attempt_allocation_force(word_size);
 }
 
@@ -67,11 +109,15 @@ inline PLAB* G1PLABAllocator::alloc_buffer(InCSetState dest) {
          "Allocation buffer index out of bounds: " CSETSTATE_FORMAT, dest.value());
   assert(_alloc_buffers[dest.value()] != NULL,
          "Allocation buffer is NULL: " CSETSTATE_FORMAT, dest.value());
+//	if (dest.is_4k)
+//	  return _alloc_buffers[dest.value()+2];
   return _alloc_buffers[dest.value()];
 }
 
 inline HeapWord* G1PLABAllocator::plab_allocate(InCSetState dest,
                                                 size_t word_sz) {
+	if (word_sz >= 512)
+			dest.set_4k(true);
   PLAB* buffer = alloc_buffer(dest);
   if (_survivor_alignment_bytes == 0 || !dest.is_young()) {
     return buffer->allocate(word_sz);

@@ -44,6 +44,9 @@ private:
   bool _survivor_is_full;
   bool _old_is_full;
 
+	bool _survivor_4k_is_full;
+  bool _old_4k_is_full;
+
   // Alloc region used to satisfy mutator allocation requests.
   MutatorAllocRegion _mutator_alloc_region;
 
@@ -57,14 +60,30 @@ private:
 
 	//cgmin modify here
 
+  MutatorAllocRegion _mutator_alloc_region_4k;
+  SurvivorGCAllocRegion _survivor_gc_alloc_region_4k;
+  OldGCAllocRegion _old_gc_alloc_region_4k;
+
+
+  inline MutatorAllocRegion* mutator_alloc_region_4k();
+  inline SurvivorGCAllocRegion* survivor_gc_alloc_region_4k();
+  inline OldGCAllocRegion* old_gc_alloc_region_4k();
 
   HeapRegion* _retained_old_gc_alloc_region;
+	HeapRegion* _retained_old_gc_alloc_region_4k; // hmm
 
   bool survivor_is_full() const;
   bool old_is_full() const;
 
   void set_survivor_full();
   void set_old_full();
+
+	bool survivor_4k_is_full() const;
+	bool old_4k_is_full() const;
+
+	void set_survivor_4k_full();
+	void set_old_4k_full();
+
 
   void reuse_retained_old_region(EvacuationInfo& evacuation_info,
                                  OldGCAllocRegion* old,
@@ -109,6 +128,8 @@ public:
   inline HeapWord* attempt_allocation_force(size_t word_size);
 
   size_t unsafe_max_tlab_alloc();
+  size_t unsafe_max_tlab_alloc_4k();
+
   size_t used_in_alloc_regions();
 
   // Allocate blocks of memory during garbage collection. Will ensure an
@@ -136,6 +157,11 @@ private:
   PLAB  _surviving_alloc_buffer;
   PLAB  _tenured_alloc_buffer;
   PLAB* _alloc_buffers[InCSetState::Num];
+
+	//cgmin
+	PLAB  _surviving_alloc_buffer_4k;
+  PLAB  _tenured_alloc_buffer_4k;
+
 
   // The survivor alignment in effect in bytes.
   // == 0 : don't align survivors
