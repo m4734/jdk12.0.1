@@ -170,26 +170,49 @@ HeapWord* G1ParScanThreadState::allocate_in_next_plab(InCSetState const state,
 
   // Right now we only have two types of regions (young / old) so
   // let's keep the logic here simple. We can generalize it when necessary.
-  if (dest->is_young()) {
+ /*
+	if (dest->value() == InCSetState::Young4k) //cgmin plab
+	{
     bool plab_refill_in_old_failed = false;
-		//cgmin
+		HeapWord* _obj_ptr;
+			 _obj_ptr	 = _plab_allocator->allocate(InCSetState::Old4k,
+                                                        word_sz,
+                                                        &plab_refill_in_old_failed);
+			 if (_obj_ptr != NULL)
+			 {
+					 dest->set_old();
+					 dest->set_4k(true);
+					 return obj_ptr;
+			 }
+
+}
+*/
+  if (dest->is_young()) {// || dest->value() == InCSetState::Young4k) { //cgmin plab
+    bool plab_refill_in_old_failed = false;
 		/*
     HeapWord* const obj_ptr = _plab_allocator->allocate(InCSetState::Old,
                                                         word_sz,
                                                         &plab_refill_in_old_failed);
 																												*/
 	  HeapWord* _obj_ptr;
-	 if (word_sz >= 512 && false) //cgmin
-		 _obj_ptr	 = _plab_allocator_4k->allocate(InCSetState::Old,
-                                                        word_sz,
-                                                        &plab_refill_in_old_failed);
-	 else
 		 _obj_ptr	 = _plab_allocator->allocate(InCSetState::Old,
                                                         word_sz,
                                                         &plab_refill_in_old_failed);
 
-		HeapWord* const obj_ptr = _obj_ptr;
+		HeapWord* obj_ptr = _obj_ptr;
 
+		if (obj_ptr == NULL && dest->is_4k())
+			{
+				InCSetState temp;
+				temp.set_old();
+				temp.set_4k(false);
+		 obj_ptr	 = _plab_allocator->allocate(temp,
+                                                        word_sz,
+                                                        &plab_refill_in_old_failed);
+		 if (obj_ptr != NULL)
+				 dest->set_4k(false);
+
+			}
 
     // Make sure that we won't attempt to copy any other objects out
     // of a survivor region (given that apparently we cannot allocate
@@ -261,21 +284,35 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   }
 
 	G1PLABAllocator *__plab_allocator;
+	size_t _word_sz;
 	if (word_sz >= 512 && false) //cgmin
-			__plab_allocator = _plab_allocator_4k;
+	{
+			_word_sz = ((word_sz-1)/512+1)*512;
+			dest_state.set_4k(true);	
+//			__plab_allocator = _plab_allocator_4k;
+	}
 	else
+	{
+			dest_state.set_4k(false);
+			_word_sz = word_sz;
 			__plab_allocator = _plab_allocator;
-
-  HeapWord* obj_ptr = __plab_allocator->plab_allocate(dest_state, word_sz);
-
+	}
+//printf("p0\n");
+  HeapWord* obj_ptr = __plab_allocator->plab_allocate(dest_state, _word_sz);
+//printf("p1\n");
   // PLAB allocations should succeed most of the time, so we'll
   // normally check against NULL once and that's it.
   if (obj_ptr == NULL) {
     bool plab_refill_failed = false;
-    obj_ptr = __plab_allocator->allocate_direct_or_new_plab(dest_state, word_sz, &plab_refill_failed);
+		printf("p2 direct or new\n");
+    obj_ptr = __plab_allocator->allocate_direct_or_new_plab(dest_state, _word_sz, &plab_refill_failed);
+//		printf("p3\n");
     if (obj_ptr == NULL) {
-      obj_ptr = allocate_in_next_plab(state, &dest_state, word_sz, plab_refill_failed);
+				printf("p4 next\n");
+      obj_ptr = allocate_in_next_plab(state, &dest_state, _word_sz, plab_refill_failed);
+//			printf("p5\n");
       if (obj_ptr == NULL) {
+					printf("p6 fail\n");
         // This will either forward-to-self, or detect that someone else has
         // installed a forwarding pointer.
         return handle_evacuation_failure_par(old, old_mark);
@@ -283,7 +320,7 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
     }
     if (_g1h->_gc_tracer_stw->should_report_promotion_events()) {
       // The events are checked individually as part of the actual commit
-      report_promotion_event(dest_state, old, word_sz, age, obj_ptr);
+      report_promotion_event(dest_state, old, _word_sz, age, obj_ptr);
     }
   }
 
@@ -315,12 +352,13 @@ gettimeofday(&tv2,NULL);
 t_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
 //Tickspan time = Ticks::now()-start;
 //t_sum+=time.seconds();
-//printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
 if (word_sz >= 512)
 {
 ++cgmin_b;
 b_sum+=word_sz;
-//printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+//printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+printf("p-p\n");
 }
 else
 {

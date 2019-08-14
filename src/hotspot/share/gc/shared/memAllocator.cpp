@@ -273,7 +273,7 @@ HeapWord* MemAllocator::allocate_inside_tlab(Allocation& allocation) const {
 	//cgmin inside tlab
 	HeapWord* mem;
 
-	if (_word_size < 512)// || true)
+	if (_word_size < 512 || true)
 			mem = _thread->tlab().allocate(_word_size);
 	else
 			mem = _thread->tlab4k().allocate(_word_size);
@@ -290,7 +290,7 @@ HeapWord* MemAllocator::allocate_inside_tlab_slow(Allocation& allocation) const 
 
   HeapWord* mem = NULL;
 
-	if (_word_size < 512)// || true) //cgmin bad
+	if (_word_size < 512 || true) //cgmin bad
 	{
 
   ThreadLocalAllocBuffer& tlab = _thread->tlab();
@@ -423,7 +423,7 @@ HeapWord* MemAllocator::allocate_inside_tlab_slow(Allocation& allocation) const 
 }
 
 HeapWord* MemAllocator::mem_allocate(Allocation& allocation) const {
-  if (UseTLAB) {
+  if (UseTLAB && false) {  //cgmin
     HeapWord* result = allocate_inside_tlab(allocation);
     if (result != NULL) {
       return result;

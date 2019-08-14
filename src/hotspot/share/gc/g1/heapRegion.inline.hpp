@@ -38,7 +38,34 @@
 inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
                                                   size_t desired_word_size,
                                                   size_t* actual_size) {
+//		return par_allocate_impl(min_word_size,desired_word_size,actual_size);
   HeapWord* obj = top();
+	if (min_word_size >= 512 && false) //cgmin
+	{
+			HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
+			/*
+			size_t pd = pointer_delta(obj2,obj);
+			min_word_size+=pd;
+			desired_word_size+=pd;
+			*/
+			/*
+			if (obj + desired_word_size > end())
+			{
+					obj = top();
+					printf("ai1f\n");
+			}
+
+
+					printf("ai1 %p %p\n",top(),obj);
+					if (end() < obj)
+							return NULL;
+							*/
+			if (obj2 < end())// && false)
+					obj = obj2;
+				printf("obj\n");
+}	
+//	else
+//			obj = top();
   size_t available = pointer_delta(end(), obj);
   size_t want_to_allocate = MIN2(available, desired_word_size);
   if (want_to_allocate >= min_word_size) {
@@ -55,11 +82,32 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
 inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
                                                       size_t desired_word_size,
                                                       size_t* actual_size) {
+
   do {
     HeapWord* obj = top();
+		HeapWord* obj2;
+		size_t _desired_word_size,_min_word_size,pd;
+		if (min_word_size >= 512 && false) // cgmin
+		{
+				obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
+//				printf("ai2 %p %p\n",obj,obj2);
+				if (end() < obj2)
+						return NULL;
+//				set_top(obj);
+				pd = pointer_delta(obj2,obj);
+				_desired_word_size = desired_word_size+pd;
+				_min_word_size = min_word_size+pd;
+		}
+		else
+		{
+				obj2 = obj;//top();
+				pd = 0;
+				_desired_word_size = desired_word_size;
+				_min_word_size = min_word_size;
+		}
     size_t available = pointer_delta(end(), obj);
-    size_t want_to_allocate = MIN2(available, desired_word_size);
-    if (want_to_allocate >= min_word_size) {
+    size_t want_to_allocate = MIN2(available, _desired_word_size); //
+    if (want_to_allocate >= _min_word_size) {//
       HeapWord* new_top = obj + want_to_allocate;
       HeapWord* result = Atomic::cmpxchg(new_top, top_addr(), obj);
       // result can be one of two:
@@ -67,8 +115,8 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
       //  otherwise: the new value of the top is returned.
       if (result == obj) {
         assert(is_aligned(obj) && is_aligned(new_top), "checking alignment");
-        *actual_size = want_to_allocate;
-        return obj;
+        *actual_size = want_to_allocate-pd;
+        return obj2; //
       }
     } else {
       return NULL;
@@ -81,7 +129,22 @@ inline HeapWord* G1ContiguousSpace::allocate(size_t min_word_size,
                                              size_t* actual_size) {
   HeapWord* res = allocate_impl(min_word_size, desired_word_size, actual_size);
   if (res != NULL) {
-    _bot_part.alloc_block(res, *actual_size);
+			printf("bot\n");
+				printf("%p %lu %lu %lu\n",res,min_word_size,desired_word_size,*actual_size);
+				/*
+		if (min_word_size >= 512) //cgmin
+		{
+				HeapWord *obj = (HeapWord*)(((reinterpret_cast<uintptr_t>(res)-1)/4096+1)*4096);
+				size_t size = (*actual_size/4096)*4096;
+				_bot_part.alloc_block(res,*actual_size-size);
+				_bot_part.alloc_block(obj,size);
+			return obj;//(HeapWord*)(((reinterpret_cast<uintptr_t>(res)-1)/4096+1)*4096);
+		}
+		else
+		*/
+    	_bot_part.alloc_block(res, *actual_size);
+			
+		printf("bot o\n");
   }
   return res;
 }

@@ -64,7 +64,7 @@ struct InCSetState {
     Young        =  1,    // The region is in the collection set and a young region.
     Old          =  2,    // The region is in the collection set and an old region.
 		Young4k			=		3,
-		Old4k				=		4, //cgmin F
+		Old4k				=		4, //cgmin do not use
     Num
   };
 
@@ -80,12 +80,21 @@ struct InCSetState {
   bool is_in_cset() const              { return _value > NotInCSet; }
 
   bool is_humongous() const            { return _value == Humongous; }
-  bool is_young() const                { return _value == Young; }
-  bool is_old() const                  { return _value == Old; }
+  bool is_young() const                { return (_value == Young)/* || (_value == Young4k)*/; } //cgmin plab
+  bool is_old() const                  { return (_value == Old)/* || (_value == Old4k)*/; } //cgmin plab
   bool is_optional() const             { return _value == Optional; }
 
 	bool is_4k() const										{return _4k; }
-	void set_4k(bool in_4k)								{_4k = in_4k; _value+=2; }
+	void set_4k(bool in_4k)
+{
+		/*
+		if ((in_4k == true) && (_value == 1 || _value == 2))
+				_value+=2;
+		else if ((in_4k == false) && (_value == 3 || _value == 4))
+				_value-=2;
+				*/
+		_4k = in_4k;
+}
 
 #ifdef ASSERT
   bool is_default() const              { return _value == NotInCSet; }

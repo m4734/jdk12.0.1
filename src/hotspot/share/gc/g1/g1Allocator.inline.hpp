@@ -56,14 +56,19 @@ inline OldGCAllocRegion* G1Allocator::old_gc_alloc_region_4k() {
 inline HeapWord* G1Allocator::attempt_allocation(size_t min_word_size,
                                                  size_t desired_word_size,
                                                  size_t* actual_word_size) {
-		if (desired_word_size >= 512)
+		if (desired_word_size >= 512 && false)// cgmin
 		{
 				size_t word_size_4k = ((desired_word_size-1)/512+1)*512;
 	  HeapWord* result = mutator_alloc_region_4k()->attempt_retained_allocation(word_size_4k, word_size_4k, actual_word_size);
+//			printf("mutator_alloc_region 4k-1 %lx %lu %lu %lu %lu\n",(unsigned long)result,min_word_size,desired_word_size,*actual_word_size,word_size_4k);
   if (result != NULL) {
     return result;
   }
-  return mutator_alloc_region_4k()->attempt_allocation(word_size_4k, word_size_4k, actual_word_size);
+//  return mutator_alloc_region_4k()->attempt_allocation(word_size_4k, word_size_4k, actual_word_size);
+  	result = mutator_alloc_region_4k()->attempt_allocation(word_size_4k, word_size_4k, actual_word_size);
+//		printf("mutator_alloc_region 4k-2 %lx %lu %lu %lu %lu\n",(unsigned long)result,min_word_size,desired_word_size,*actual_word_size,word_size_4k);
+
+		return result;
 	}
 		else
 		{
@@ -71,12 +76,14 @@ inline HeapWord* G1Allocator::attempt_allocation(size_t min_word_size,
   if (result != NULL) {
     return result;
   }
+//	result = mutator_alloc_region()->attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+//	return result;
   return mutator_alloc_region()->attempt_allocation(min_word_size, desired_word_size, actual_word_size);
 		}
 }
 
 inline HeapWord* G1Allocator::attempt_allocation_locked(size_t word_size) {
-		if (word_size >= 512)
+		if (word_size >= 512 && false)
 		{
 				word_size = ((word_size-1)/512+1)*512;
 	  HeapWord* result = mutator_alloc_region_4k()->attempt_allocation_locked(word_size);
@@ -95,7 +102,7 @@ inline HeapWord* G1Allocator::attempt_allocation_locked(size_t word_size) {
 }
 
 inline HeapWord* G1Allocator::attempt_allocation_force(size_t word_size) {
-		if (word_size >= 512)
+		if (word_size >= 512 && false)
 		{
 				word_size = ((word_size-1)/512+1)*512;
   return mutator_alloc_region_4k()->attempt_allocation_force(word_size);
@@ -109,15 +116,24 @@ inline PLAB* G1PLABAllocator::alloc_buffer(InCSetState dest) {
          "Allocation buffer index out of bounds: " CSETSTATE_FORMAT, dest.value());
   assert(_alloc_buffers[dest.value()] != NULL,
          "Allocation buffer is NULL: " CSETSTATE_FORMAT, dest.value());
-//	if (dest.is_4k)
-//	  return _alloc_buffers[dest.value()+2];
+	if (dest.is_4k() && (dest.is_young() || dest.is_old()))
+	  return _alloc_buffers[dest.value()+2];
   return _alloc_buffers[dest.value()];
 }
 
 inline HeapWord* G1PLABAllocator::plab_allocate(InCSetState dest,
                                                 size_t word_sz) {
-	if (word_sz >= 512)
+	if (word_sz >= 512 && false) // cgmin
+	{
 			dest.set_4k(true);
+
+//printf("%d\n",(int)_survivor_alignment_bytes);
+		word_sz = ((word_sz-1)/512+1)*512;
+  PLAB* buffer = alloc_buffer(dest);
+    return buffer->allocate_aligned(word_sz, 4096);
+
+//printf("ws %d\n",(int)word_sz);
+	}
   PLAB* buffer = alloc_buffer(dest);
   if (_survivor_alignment_bytes == 0 || !dest.is_young()) {
     return buffer->allocate(word_sz);

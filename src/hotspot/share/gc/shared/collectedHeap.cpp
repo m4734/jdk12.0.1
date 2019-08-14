@@ -487,8 +487,10 @@ void CollectedHeap::ensure_parsability(bool retire_tlabs) {
     if (UseTLAB) {
       if (retire_tlabs) {
         thread->tlab().retire(&stats);
+//				thread->tlab_4k().restire(&stats); //cgmin tlab
       } else {
         thread->tlab().make_parsable();
+//				thread->tlab_4k().make_parsable(); //cgmin tlab
       }
     }
   }
@@ -503,6 +505,7 @@ void CollectedHeap::resize_all_tlabs() {
   if (UseTLAB && ResizeTLAB) {
     for (JavaThreadIteratorWithHandle jtiwh; JavaThread *thread = jtiwh.next(); ) {
       thread->tlab().resize();
+//			thread->tlab_4k().resize(); //cgmin tlab
     }
   }
 }
