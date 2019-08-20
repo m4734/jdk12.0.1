@@ -240,6 +240,8 @@ HeapWord* G1Allocator::par_allocate_during_gc(InCSetState dest,
                                               size_t min_word_size,
                                               size_t desired_word_size,
                                               size_t* actual_word_size) {
+		if (dest.is_4k())
+				*actual_word_size = 1;
   switch (dest.value()) {
     case InCSetState::Young:
       return survivor_attempt_allocation(min_word_size, desired_word_size, actual_word_size);
@@ -269,8 +271,9 @@ HeapWord* G1Allocator::survivor_attempt_allocation(size_t min_word_size,
 																																		*/
 
   HeapWord* result;
-	if (desired_word_size >= 512 && false)// cgmin plab
+	if (*actual_word_size == 1/* && desired_word_size >= 512 && desired_word_size % 512 == 0*/ && false)// cgmin V plab
 	{
+			printf("plab survivor attempt\n");
 			int word_size_4k = ((desired_word_size-1)/512+1)*512;
 		 result =	survivor_gc_alloc_region_4k()->attempt_allocation(word_size_4k,
                                                                     word_size_4k,
@@ -316,8 +319,9 @@ HeapWord* G1Allocator::old_attempt_allocation(size_t min_word_size,
          "we should not be seeing humongous-size allocations in this path");
 
   HeapWord* result;
-	if (desired_word_size >= 512  && false) //cgmin plab
+	if (*actual_word_size == 1/* && desired_word_size >= 512 && desired_word_size % 512 == 0*/ ) //  && false) //cgmin plab
 	{
+			printf("plab old attempt\n");
 		int word_size_4k = ((desired_word_size-1)/512+1)*512;
 		result	= old_gc_alloc_region_4k()->attempt_allocation(word_size_4k,
                                                                word_size_4k,
@@ -434,7 +438,7 @@ HeapWord* G1PLABAllocator::allocate_direct_or_new_plab(InCSetState dest,
   // Try direct allocation.
   HeapWord* result = _allocator->par_allocate_during_gc(dest, word_sz);
   if (result != NULL) {
-			if (dest.is_4k() && (dest.is_young() || dest.is_old())) //cgmin plab
+			if (dest.is_4k() && (dest.is_young() || dest.is_old())) //cgmin 
 		    _direct_allocated[dest.value()+2] += word_sz;
 		else
 	    _direct_allocated[dest.value()] += word_sz;

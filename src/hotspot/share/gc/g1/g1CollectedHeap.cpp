@@ -400,7 +400,8 @@ HeapWord*
 G1CollectedHeap::mem_allocate(size_t word_size,
                               bool*  gc_overhead_limit_was_exceeded) {
   assert_heap_not_locked_and_not_at_safepoint();
-//printf("mem_allocate %d\n",(int)word_size); //cgmin
+//	if (word_size >= 512)
+//		printf("mem_allocate %d\n",(int)word_size); //cgmin
   if (is_humongous(word_size)) {
     return attempt_allocation_humongous(word_size);
   }

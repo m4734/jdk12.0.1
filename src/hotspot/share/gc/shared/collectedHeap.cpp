@@ -394,7 +394,6 @@ CollectedHeap::fill_with_array(HeapWord* start, size_t words, bool zap)
   const size_t payload_size = words - filler_array_hdr_size();
   const size_t len = payload_size * HeapWordSize / sizeof(jint);
   assert((int)len >= 0, "size too large " SIZE_FORMAT " becomes %d", words, (int)len);
-
   ObjArrayAllocator allocator(Universe::intArrayKlassObj(), words, (int)len, /* do_zero */ false);
   allocator.initialize(start);
   DEBUG_ONLY(zap_filler_array(start, words, zap);)

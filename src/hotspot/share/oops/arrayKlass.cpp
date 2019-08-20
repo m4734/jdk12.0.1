@@ -132,6 +132,8 @@ bool ArrayKlass::compute_is_subtype_of(Klass* k) {
 objArrayOop ArrayKlass::allocate_arrayArray(int n, int length, TRAPS) {
   check_array_allocation_length(length, arrayOopDesc::max_array_length(T_ARRAY), CHECK_0);
   int size = objArrayOopDesc::object_size(length);
+	if (size >= 512)
+			printf("allocate arrayArray\n");
   Klass* k = array_klass(n+dimension(), CHECK_0);
   ArrayKlass* ak = ArrayKlass::cast(k);
   objArrayOop o = (objArrayOop)Universe::heap()->array_allocate(ak, size, length,

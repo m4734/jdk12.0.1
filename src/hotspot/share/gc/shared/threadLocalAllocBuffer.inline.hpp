@@ -38,6 +38,31 @@ inline void ThreadLocalAllocBuffer::set_4k(bool in_4k) {
 inline HeapWord* ThreadLocalAllocBuffer::allocate(size_t size) {
   invariants();
   HeapWord* obj = top();
+	if (size >= 512 && false) //cgmin
+	{
+			HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
+if (pointer_delta(end(), obj2) < size) 
+	{
+			printf("n1\n");
+			return NULL;
+	}
+
+			size_t pd = pointer_delta(obj2,obj);
+	  			printf("allocate obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+		if (pd >= CollectedHeap::min_fill_size())
+		{
+				CollectedHeap::fill_with_object(obj,pd);
+		}
+			else if (pd != 0)
+			{
+					printf("n2\n");
+					return NULL;
+			}
+			printf("allocate obj %p obj2 %p\n",obj,obj2);
+			printf("pd %lu\n",pd);
+			obj  = obj2;
+	}
+
   if (pointer_delta(end(), obj) >= size) {
     // successful thread-local allocation
 #ifdef ASSERT

@@ -194,25 +194,25 @@ HeapWord* G1ParScanThreadState::allocate_in_next_plab(InCSetState const state,
                                                         word_sz,
                                                         &plab_refill_in_old_failed);
 																												*/
-	  HeapWord* _obj_ptr;
-		 _obj_ptr	 = _plab_allocator->allocate(InCSetState::Old,
-                                                        word_sz,
-                                                        &plab_refill_in_old_failed);
+	  HeapWord* obj_ptr = NULL;
 
-		HeapWord* obj_ptr = _obj_ptr;
-
-		if (obj_ptr == NULL && dest->is_4k())
+		if (dest->is_4k() && false) //cgmin V plab
 			{
 				InCSetState temp;
 				temp.set_old();
-				temp.set_4k(false);
+				temp.set_4k(true);
 		 obj_ptr	 = _plab_allocator->allocate(temp,
                                                         word_sz,
                                                         &plab_refill_in_old_failed);
-		 if (obj_ptr != NULL)
-				 dest->set_4k(false);
-
 			}
+		 if (obj_ptr == NULL)
+		 {
+			 obj_ptr	 = _plab_allocator->allocate(InCSetState::Old,
+                                                        word_sz,
+                                                        &plab_refill_in_old_failed);
+			 if (obj_ptr != NULL)
+				 dest->set_4k(false);
+		 }
 
     // Make sure that we won't attempt to copy any other objects out
     // of a survivor region (given that apparently we cannot allocate
@@ -283,19 +283,22 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
     return handle_evacuation_failure_par(old, old_mark);
   }
 
-	G1PLABAllocator *__plab_allocator;
+	G1PLABAllocator *__plab_allocator = _plab_allocator;
 	size_t _word_sz;
-	if (word_sz >= 512 && false) //cgmin
+	if (word_sz >= 512 && false) //cgmin V plab
 	{
 			_word_sz = ((word_sz-1)/512+1)*512;
-			dest_state.set_4k(true);	
+			printf("ws %lu %lu\n",word_sz,_word_sz);
+//			_word_sz = word_sz;			
+//			dest_state.set_4k(true);	
+			dest_state.set_4k(false);			
 //			__plab_allocator = _plab_allocator_4k;
 	}
 	else
 	{
 			dest_state.set_4k(false);
 			_word_sz = word_sz;
-			__plab_allocator = _plab_allocator;
+//			__plab_allocator = _plab_allocator;
 	}
 //printf("p0\n");
   HeapWord* obj_ptr = __plab_allocator->plab_allocate(dest_state, _word_sz);
@@ -330,6 +333,7 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
 #ifndef PRODUCT
   // Should this evacuation fail?
   if (_g1h->evacuation_should_fail()) {
+			printf("PPP\n");
     // Doing this after all the allocation attempts also tests the
     // undo_allocation() method too.
     __plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
@@ -352,12 +356,12 @@ gettimeofday(&tv2,NULL);
 t_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
 //Tickspan time = Ticks::now()-start;
 //t_sum+=time.seconds();
-printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+//printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
 if (word_sz >= 512)
 {
 ++cgmin_b;
 b_sum+=word_sz;
-//printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
 printf("p-p\n");
 }
 else
@@ -381,7 +385,7 @@ s_sum+=word_sz;
       } else {
         obj->set_mark_raw(old_mark->set_age(age));
       }
-      _age_table.add(age, word_sz);
+      _age_table.add(age, _word_sz); // cgmin plab
     } else {
       obj->set_mark_raw(old_mark);
     }
@@ -399,7 +403,7 @@ s_sum+=word_sz;
                                              obj);
     }
 
-    _surviving_young_words[young_index] += word_sz;
+    _surviving_young_words[young_index] += _word_sz; //cgmin plab
 
     if (obj->is_objArray() && arrayOop(obj)->length() >= ParGCArrayScanChunk) {
       // We keep track of the next start index in the length field of
@@ -414,7 +418,7 @@ s_sum+=word_sz;
     }
     return obj;
   } else {
-    __plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
+    __plab_allocator->undo_allocation(dest_state, obj_ptr, _word_sz); //cgmin plab
     return forward_ptr;
   }
 }

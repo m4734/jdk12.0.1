@@ -171,6 +171,8 @@ int ObjArrayKlass::oop_size(oop obj) const {
 objArrayOop ObjArrayKlass::allocate(int length, TRAPS) {
   check_array_allocation_length(length, arrayOopDesc::max_array_length(T_OBJECT), CHECK_0);
   int size = objArrayOopDesc::object_size(length);
+	if (size >= 512)
+			printf("allocate\n");
   return (objArrayOop)Universe::heap()->array_allocate(this, size, length,
                                                        /* do_zero */ true, THREAD);
 }

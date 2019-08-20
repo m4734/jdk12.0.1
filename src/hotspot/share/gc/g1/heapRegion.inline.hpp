@@ -43,8 +43,9 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
 	if (min_word_size >= 512 && false) //cgmin
 	{
 			HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
-			/*
+			
 			size_t pd = pointer_delta(obj2,obj);
+			/*
 			min_word_size+=pd;
 			desired_word_size+=pd;
 			*/
@@ -61,8 +62,19 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
 							return NULL;
 							*/
 			if (obj2 < end())// && false)
+			{
+			if (pd >= CollectedHeap::min_fill_size())
+			{
+				CollectedHeap::fill_with_object(obj,pd);	
+			}
+			else if (pd != 0)
+					return NULL;
+printf("allocate_impl obj %p obj2 %p\n",obj,obj2);
 					obj = obj2;
-				printf("obj\n");
+			}
+			else
+					return NULL;
+//				printf("obj\n");
 }	
 //	else
 //			obj = top();
@@ -95,6 +107,8 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
 						return NULL;
 //				set_top(obj);
 				pd = pointer_delta(obj2,obj);
+				if (pd != 0 && pd < CollectedHeap::min_fill_size())
+						return NULL;
 				_desired_word_size = desired_word_size+pd;
 				_min_word_size = min_word_size+pd;
 		}
@@ -116,6 +130,11 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
       if (result == obj) {
         assert(is_aligned(obj) && is_aligned(new_top), "checking alignment");
         *actual_size = want_to_allocate-pd;
+				if (obj != obj2)
+				{
+				CollectedHeap::fill_with_object(obj,pd);
+				printf("par_allocate_impl obj %p obj2 %p\n",obj,obj2);
+				}
         return obj2; //
       }
     } else {

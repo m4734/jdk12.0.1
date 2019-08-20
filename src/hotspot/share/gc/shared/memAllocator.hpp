@@ -41,6 +41,7 @@ protected:
   Thread* const        _thread;
   Klass* const         _klass;
   const size_t         _word_size;
+//	size_t								_word_size; //cgmin  
 
 private:
   // Allocate from the current thread's TLAB, with broken-out slow path.
@@ -74,7 +75,7 @@ protected:
   }
 
 public:
-  oop allocate() const;
+  oop allocate();
   virtual oop initialize(HeapWord* mem) const = 0;
 };
 
@@ -96,7 +97,19 @@ public:
                     Thread* thread = Thread::current())
     : MemAllocator(klass, word_size, thread),
       _length(length),
-      _do_zero(do_zero) {}
+      _do_zero(do_zero) {
+					/*
+	if (_word_size>=512 && false) //cgmin
+	{
+			printf("ws %lu l %d\n",_word_size,_length);
+			int word_size = ((_word_size-1)/512+1)*512;
+			_length+=(word_size-_word_size)*8;
+			_word_size = word_size;
+	}
+	*/
+
+			
+			}
   virtual oop initialize(HeapWord* mem) const;
 };
 

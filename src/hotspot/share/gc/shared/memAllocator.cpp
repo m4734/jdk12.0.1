@@ -423,7 +423,7 @@ HeapWord* MemAllocator::allocate_inside_tlab_slow(Allocation& allocation) const 
 }
 
 HeapWord* MemAllocator::mem_allocate(Allocation& allocation) const {
-  if (UseTLAB && false) {  //cgmin
+  if (UseTLAB) {// && false) {  //cgmin test
     HeapWord* result = allocate_inside_tlab(allocation);
     if (result != NULL) {
       return result;
@@ -433,7 +433,18 @@ HeapWord* MemAllocator::mem_allocate(Allocation& allocation) const {
   return allocate_outside_tlab(allocation);
 }
 
-oop MemAllocator::allocate() const {
+oop MemAllocator::allocate() /*const*/ {
+
+	if (_word_size>=512 && false) //cgmin
+	{
+			printf("ws %lu\n",_word_size);
+			/*
+			int word_size = ((_word_size-1)/512+1)*512;
+			_length+=(word_size-_word_size)*8;
+			_word_size = word_size;
+			*/
+	}
+
   oop obj = NULL;
   {
     Allocation allocation(*this, &obj);
@@ -490,7 +501,11 @@ oop ObjArrayAllocator::initialize(HeapWord* mem) const {
   if (_do_zero) {
     mem_clear(mem);
   }
-  arrayOopDesc::set_length(mem, _length);
+	if (false && _length >= 4096) //cgmin
+//		  arrayOopDesc::set_length(mem, ((_length-1)/512+1)*512);
+		printf("lll %d\n",_length);		  
+//	else
+	  arrayOopDesc::set_length(mem, _length);
   return finish(mem);
 }
 
