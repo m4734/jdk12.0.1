@@ -107,7 +107,7 @@ void G1FullGCCompactionPoint::forward(oop object, size_t size) {
   // Store a forwarding pointer if the object should be moved.
   if ((HeapWord*)object != _compaction_top) {
 
-			if (size >= 512) //cgmin 0822
+			if (false && size >= 512) //cgmin 0822
 			{
 //					HeapWord *obj = (HeapWord*)(((reinterpret_cast<uintptr_t>(res)-1)/4096+1)*4096);
 				HeapWord* ct2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(_compaction_top)-1)/4096+1)*4096);

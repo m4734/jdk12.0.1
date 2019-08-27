@@ -195,7 +195,7 @@ HeapWord* G1ParScanThreadState::allocate_in_next_plab(InCSetState const state,
                                                         &plab_refill_in_old_failed);
 																												*/
 	  HeapWord* obj_ptr = NULL;
-
+/*
 		if (dest->is_4k() && false) //cgmin V plab
 			{
 				InCSetState temp;
@@ -205,13 +205,16 @@ HeapWord* G1ParScanThreadState::allocate_in_next_plab(InCSetState const state,
                                                         word_sz,
                                                         &plab_refill_in_old_failed);
 			}
+			*/
 		 if (obj_ptr == NULL)
 		 {
 			 obj_ptr	 = _plab_allocator->allocate(InCSetState::Old,
                                                         word_sz,
                                                         &plab_refill_in_old_failed);
+			 /*
 			 if (obj_ptr != NULL)
 				 dest->set_4k(false);
+				 */
 		 }
 
     // Make sure that we won't attempt to copy any other objects out
@@ -291,12 +294,12 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
 			printf("ws %lu %lu\n",word_sz,_word_sz);
 //			_word_sz = word_sz;			
 //			dest_state.set_4k(true);	
-			dest_state.set_4k(false);			
+//			dest_state.set_4k(false);			
 //			__plab_allocator = _plab_allocator_4k;
 	}
 	else
 	{
-			dest_state.set_4k(false);
+//			dest_state.set_4k(false);
 			_word_sz = word_sz;
 //			__plab_allocator = _plab_allocator;
 	}
@@ -360,7 +363,7 @@ if (word_sz >= 512)
 {
 ++cgmin_b;
 b_sum+=word_sz;
-printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+printf("part %p %p %d\n",(void*)old,(void*)obj_ptr,(int)word_sz); //cgmin
 //printf("p-p\n");
 }
 else

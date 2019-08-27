@@ -250,11 +250,12 @@ HeapWord* G1Allocator::par_allocate_during_gc(InCSetState dest,
     case InCSetState::Old:
       return old_attempt_allocation(min_word_size, desired_word_size, actual_word_size);
 // may not need
+ /*
     case InCSetState::Young4k:
       return survivor_attempt_allocation(min_word_size, desired_word_size, actual_word_size);
     case InCSetState::Old4k:
       return old_attempt_allocation(min_word_size, desired_word_size, actual_word_size);
-
+*/
     default:
       ShouldNotReachHere();
       return NULL; // Keep some compilers happy
@@ -383,9 +384,10 @@ G1PLABAllocator::G1PLABAllocator(G1Allocator* allocator) :
   }
   _alloc_buffers[InCSetState::Young] = &_surviving_alloc_buffer;
   _alloc_buffers[InCSetState::Old]  = &_tenured_alloc_buffer;
-
+/*
 	_alloc_buffers[InCSetState::Young4k] = &_surviving_alloc_buffer_4k;
 	_alloc_buffers[InCSetState::Old4k] = &_tenured_alloc_buffer_4k;
+	*/
 }
 
 bool G1PLABAllocator::may_throw_away_buffer(size_t const allocation_word_sz, size_t const buffer_size) const {
@@ -441,7 +443,7 @@ HeapWord* G1PLABAllocator::allocate_direct_or_new_plab(InCSetState dest,
   // Try direct allocation.
   HeapWord* result = _allocator->par_allocate_during_gc(dest, word_sz);
   if (result != NULL) {
-			if (false && dest.is_4k() && (dest.is_young() || dest.is_old())) //cgmin 
+			if (false && /*dest.is_4k() &&*/ (dest.is_young() || dest.is_old())) //cgmin 
 		    _direct_allocated[dest.value()+2] += word_sz;
 		else
 	    _direct_allocated[dest.value()] += word_sz;

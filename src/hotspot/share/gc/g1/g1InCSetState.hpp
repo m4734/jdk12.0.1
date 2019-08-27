@@ -46,7 +46,7 @@ struct InCSetState {
 #endif
  private:
   in_cset_state_t _value;
-	bool _4k; //cgmin may not use // no we can't use ?
+//	bool _4k; //cgmin may not use // no we can't use ?
  public:
   enum {
     // Selection of the values were driven to micro-optimize the encoding and
@@ -63,8 +63,10 @@ struct InCSetState {
     NotInCSet    =  0,    // The region is not in the collection set.
     Young        =  1,    // The region is in the collection set and a young region.
     Old          =  2,    // The region is in the collection set and an old region.
+		/*
 		Young4k			=		3,
 		Old4k				=		4, //cgmin do not use
+		*/
     Num
   };
 
@@ -83,18 +85,19 @@ struct InCSetState {
   bool is_young() const                { return (_value == Young)/* || (_value == Young4k)*/; } //cgmin plab
   bool is_old() const                  { return (_value == Old)/* || (_value == Old4k)*/; } //cgmin plab
   bool is_optional() const             { return _value == Optional; }
-
+/*
 	bool is_4k() const										{return _4k; }
 	void set_4k(bool in_4k)
 {
+*/
 		/*
 		if ((in_4k == true) && (_value == 1 || _value == 2))
 				_value+=2;
 		else if ((in_4k == false) && (_value == 3 || _value == 4))
 				_value-=2;
 				*/
-		_4k = in_4k;
-}
+//		_4k = in_4k;
+//}
 
 #ifdef ASSERT
   bool is_default() const              { return _value == NotInCSet; }

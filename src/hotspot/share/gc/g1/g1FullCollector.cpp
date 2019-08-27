@@ -165,17 +165,28 @@ void G1FullCollector::prepare_collection() {
 }
 
 void G1FullCollector::collect() {
+
+		printf("p0\n");
+
   phase1_mark_live_objects();
   verify_after_marking();
+
+	printf("p1\n");
 
   // Don't add any more derived pointers during later phases
   deactivate_derived_pointers();
 
   phase2_prepare_compaction();
 
+printf("p2\n");
+
   phase3_adjust_pointers();
 
+	printf("p3\n");
+
   phase4_do_compaction();
+
+	printf("p4\n");
 }
 
 void G1FullCollector::complete_collection() {

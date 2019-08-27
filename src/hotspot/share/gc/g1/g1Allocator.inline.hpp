@@ -121,7 +121,7 @@ inline PLAB* G1PLABAllocator::alloc_buffer(InCSetState dest) {
          "Allocation buffer index out of bounds: " CSETSTATE_FORMAT, dest.value());
   assert(_alloc_buffers[dest.value()] != NULL,
          "Allocation buffer is NULL: " CSETSTATE_FORMAT, dest.value());
-	if (dest.is_4k() && (dest.is_young() || dest.is_old()))
+	if (/*dest.is_4k() &&*/ (dest.is_young() || dest.is_old()))
 	  return _alloc_buffers[dest.value()+2];
   return _alloc_buffers[dest.value()];
 }
@@ -130,7 +130,7 @@ inline HeapWord* G1PLABAllocator::plab_allocate(InCSetState dest,
                                                 size_t word_sz) {
 
   PLAB* buffer = alloc_buffer(dest);
-	if (word_sz >= 512)// && false) // cgmin
+	if (word_sz >= 512 && false) // cgmin PLAB 0827
 	{
 //			dest.set_4k(true);
 

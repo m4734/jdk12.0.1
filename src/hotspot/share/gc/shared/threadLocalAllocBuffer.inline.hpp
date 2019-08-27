@@ -81,8 +81,8 @@ if (pointer_delta(end(), obj2) < size)
 	}
 */
 	
-		if (size >= 512)// && false) //cgmin 0820
-	{
+		if (size >= 512 && false) //cgmin 0820 TLAB
+		{
 			HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
 if (end() >= obj2 && pointer_delta(end(), obj2) >= size) 
 {
