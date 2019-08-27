@@ -66,8 +66,10 @@ inline HeapWord* G1AllocRegion::par_allocate(HeapRegion* alloc_region,
   if (!_bot_updates) {
     return alloc_region->par_allocate_no_bot_updates(min_word_size, desired_word_size, actual_word_size);
   } else {
+			/*
 			if (min_word_size >= 512)
 					printf("eee?\n"); //cgmin
+					*/
     return alloc_region->par_allocate(min_word_size, desired_word_size, actual_word_size);
   }
 }

@@ -96,6 +96,9 @@ void G1FullGCCompactionPoint::switch_region() {
 void G1FullGCCompactionPoint::forward(oop object, size_t size) {
   assert(_current_region != NULL, "Must have been initialized");
 
+	//cgmin 0822 Should I choose region?
+	size_t pd = 0;
+
   // Ensure the object fit in the current region.
   while (!object_will_fit(size)) {
     switch_region();
@@ -103,7 +106,26 @@ void G1FullGCCompactionPoint::forward(oop object, size_t size) {
 
   // Store a forwarding pointer if the object should be moved.
   if ((HeapWord*)object != _compaction_top) {
-    object->forward_to(oop(_compaction_top));
+
+			if (size >= 512) //cgmin 0822
+			{
+//					HeapWord *obj = (HeapWord*)(((reinterpret_cast<uintptr_t>(res)-1)/4096+1)*4096);
+				HeapWord* ct2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(_compaction_top)-1)/4096+1)*4096);
+				pd = pointer_delta(ct2,_compaction_top);
+				if (object_will_fit(size+pd) && pd >= CollectedHeap::min_fill_size())
+				{
+					CollectedHeap::fill_with_object(_compaction_top,pd);
+//					oop(_compaction_top)->forward_to(oop(_compaction_top));
+					oop(_compaction_top)->forward_to(NULL);
+				printf("forward ct %p ct2 %p pd %lu\n",_compaction_top,ct2,pd);
+					_compaction_top=ct2;
+				}
+				else
+						pd = 0;
+					
+			}
+
+			object->forward_to(oop(_compaction_top));
   } else {
     if (object->forwardee() != NULL) {
       // Object should not move but mark-word is used so it looks like the
@@ -126,6 +148,11 @@ void G1FullGCCompactionPoint::forward(oop object, size_t size) {
   }
 
   // Update compaction values.
+	if (pd)
+	{
+			if (true || _compaction_top > _threshold)
+		    _threshold = _current_region->cross_threshold(_compaction_top - pd, _compaction_top);			
+	}
   _compaction_top += size;
   if (_compaction_top > _threshold) {
     _threshold = _current_region->cross_threshold(_compaction_top - size, _compaction_top);

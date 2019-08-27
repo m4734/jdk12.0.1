@@ -38,7 +38,20 @@ inline void ThreadLocalAllocBuffer::set_4k(bool in_4k) {
 inline HeapWord* ThreadLocalAllocBuffer::allocate(size_t size) {
   invariants();
   HeapWord* obj = top();
-	if (size >= 512 && false) //cgmin
+/*	
+	if (size >= 512)
+	{
+			size = ((size-1)/512+1)*512;
+
+			printf("obj %p size %lu\n",obj,size);
+//				obj = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
+//				HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
+//				size_t pd = pointer_delta(obj2,obj);
+//			size+=pd;
+	}
+	*/
+/*	
+	if (size >= 512)// && false) //cgmin 0820
 	{
 			HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
 if (pointer_delta(end(), obj2) < size) 
@@ -50,8 +63,12 @@ if (pointer_delta(end(), obj2) < size)
 			size_t pd = pointer_delta(obj2,obj);
 	  			printf("allocate obj %p obj2 %p pd %lu\n",obj,obj2,pd);
 		if (pd >= CollectedHeap::min_fill_size())
+//		if (pd >= CollectedHeap::min_filler_size())		
 		{
-				CollectedHeap::fill_with_object(obj,pd);
+				printf("fill\n");
+//				set_top(obj2);
+					CollectedHeap::fill_with_object(obj,pd,true);
+//					CollectedHeap::fill_with_objects(obj,pd,false);				
 		}
 			else if (pd != 0)
 			{
@@ -62,6 +79,31 @@ if (pointer_delta(end(), obj2) < size)
 			printf("pd %lu\n",pd);
 			obj  = obj2;
 	}
+*/
+	
+		if (size >= 512)// && false) //cgmin 0820
+	{
+			HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
+if (end() >= obj2 && pointer_delta(end(), obj2) >= size) 
+{
+			size_t pd = pointer_delta(obj2,obj);
+//	  			printf("allocate obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+		if (pd >= CollectedHeap::min_fill_size())// || pd == 0)
+//		if (pd >= CollectedHeap::min_filler_size())		
+		{
+//				printf("fill\n");
+//					CollectedHeap::fill_with_objects(obj,pd,true);
+						CollectedHeap::fill_with_object(obj,pd);
+				
+
+		printf("TLAB allocate obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+			obj  = obj2;
+		}
+//			printf("pd %lu\n",pd);
+}
+	}
+
+
 
   if (pointer_delta(end(), obj) >= size) {
     // successful thread-local allocation
@@ -75,7 +117,6 @@ if (pointer_delta(end(), obj2) < size)
     // This addition is safe because we know that top is
     // at least size below end, so the add can't wrap.
     set_top(obj + size);
-
     invariants();
     return obj;
   }
@@ -87,6 +128,7 @@ inline size_t ThreadLocalAllocBuffer::compute_size(size_t obj_size) {
   // The "last" tlab may be smaller to reduce fragmentation.
   // unsafe_max_tlab_alloc is just a hint.
   const size_t available_size = Universe::heap()->unsafe_max_tlab_alloc(thread()) / HeapWordSize;
+	//printf("%lu %lu %lu\n",available_size,desired_size() + align_object_size(obj_size),max_size());
   size_t new_tlab_size = MIN3(available_size, desired_size() + align_object_size(obj_size), max_size());
 
   // Make sure there's enough room for object and filler int[].

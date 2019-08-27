@@ -40,7 +40,7 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
                                                   size_t* actual_size) {
 //		return par_allocate_impl(min_word_size,desired_word_size,actual_size);
   HeapWord* obj = top();
-	if (min_word_size >= 512 && false) //cgmin
+	if (*actual_size != 2 && desired_word_size /*min_word_size*/ >= 512)// && false) //cgmin
 	{
 			HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
 			
@@ -49,32 +49,21 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
 			min_word_size+=pd;
 			desired_word_size+=pd;
 			*/
-			/*
-			if (obj + desired_word_size > end())
-			{
-					obj = top();
-					printf("ai1f\n");
-			}
-
-
-					printf("ai1 %p %p\n",top(),obj);
-					if (end() < obj)
-							return NULL;
-							*/
-			if (obj2 < end())// && false)
+			
+			if (obj2 + desired_word_size <= end())
 			{
 			if (pd >= CollectedHeap::min_fill_size())
 			{
-				CollectedHeap::fill_with_object(obj,pd);	
+				CollectedHeap::fill_with_object(obj,pd);
+			if (*actual_size  == 1) // cgmin bot	
+	    	_bot_part.alloc_block(obj, pd);
+			printf("allocate_impl obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+				obj = obj2;
+				//set_top(obj);
 			}
-			else if (pd != 0)
-					return NULL;
-printf("allocate_impl obj %p obj2 %p\n",obj,obj2);
-					obj = obj2;
+//			else if (pd == 0)
+//					obj = obj2;
 			}
-			else
-					return NULL;
-//				printf("obj\n");
 }	
 //	else
 //			obj = top();
@@ -99,18 +88,25 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
     HeapWord* obj = top();
 		HeapWord* obj2;
 		size_t _desired_word_size,_min_word_size,pd;
-		if (min_word_size >= 512 && false) // cgmin
+		if (*actual_size != 2 && desired_word_size/*min_word_size*/ >= 512) // cgmin
 		{
 				obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
 //				printf("ai2 %p %p\n",obj,obj2);
-				if (end() < obj2)
-						return NULL;
-//				set_top(obj);
 				pd = pointer_delta(obj2,obj);
-				if (pd != 0 && pd < CollectedHeap::min_fill_size())
-						return NULL;
+				if (end() >= obj2+desired_word_size && pd >= CollectedHeap::min_fill_size())
+				{
 				_desired_word_size = desired_word_size+pd;
 				_min_word_size = min_word_size+pd;
+
+				}
+				else
+				{
+				obj2 = obj;//top();
+				pd = 0;
+				_desired_word_size = desired_word_size;
+				_min_word_size = min_word_size;
+
+				}
 		}
 		else
 		{
@@ -133,7 +129,7 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
 				if (obj != obj2)
 				{
 				CollectedHeap::fill_with_object(obj,pd);
-				printf("par_allocate_impl obj %p obj2 %p\n",obj,obj2);
+				printf("par_allocate_impl obj %p obj2 %p pd %lu\n",obj,obj2,pd);
 				}
         return obj2; //
       }
@@ -146,10 +142,10 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
 inline HeapWord* G1ContiguousSpace::allocate(size_t min_word_size,
                                              size_t desired_word_size,
                                              size_t* actual_size) {
+		*actual_size = 1; //cgmin bot
   HeapWord* res = allocate_impl(min_word_size, desired_word_size, actual_size);
   if (res != NULL) {
-			printf("bot\n");
-				printf("%p %lu %lu %lu\n",res,min_word_size,desired_word_size,*actual_size);
+//				printf("%p %lu %lu %lu\n",res,min_word_size,desired_word_size,*actual_size);
 				/*
 		if (min_word_size >= 512) //cgmin
 		{
@@ -163,7 +159,6 @@ inline HeapWord* G1ContiguousSpace::allocate(size_t min_word_size,
 		*/
     	_bot_part.alloc_block(res, *actual_size);
 			
-		printf("bot o\n");
   }
   return res;
 }
@@ -319,6 +314,7 @@ inline HeapWord* HeapRegion::allocate_no_bot_updates(size_t min_word_size,
                                                      size_t desired_word_size,
                                                      size_t* actual_word_size) {
   assert(is_young(), "we can only skip BOT updates on young regions");
+//	*actual_word_size = 0; //cgmin bot
   return allocate_impl(min_word_size, desired_word_size, actual_word_size);
 }
 

@@ -307,15 +307,15 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   // normally check against NULL once and that's it.
   if (obj_ptr == NULL) {
     bool plab_refill_failed = false;
-		printf("p2 direct or new\n");
+//		printf("p2 direct or new\n");
     obj_ptr = __plab_allocator->allocate_direct_or_new_plab(dest_state, _word_sz, &plab_refill_failed);
 //		printf("p3\n");
     if (obj_ptr == NULL) {
-				printf("p4 next\n");
+//				printf("p4 next\n");
       obj_ptr = allocate_in_next_plab(state, &dest_state, _word_sz, plab_refill_failed);
 //			printf("p5\n");
       if (obj_ptr == NULL) {
-					printf("p6 fail\n");
+//					printf("p6 fail\n");
         // This will either forward-to-self, or detect that someone else has
         // installed a forwarding pointer.
         return handle_evacuation_failure_par(old, old_mark);
@@ -333,7 +333,6 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
 #ifndef PRODUCT
   // Should this evacuation fail?
   if (_g1h->evacuation_should_fail()) {
-			printf("PPP\n");
     // Doing this after all the allocation attempts also tests the
     // undo_allocation() method too.
     __plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
@@ -362,7 +361,7 @@ if (word_sz >= 512)
 ++cgmin_b;
 b_sum+=word_sz;
 printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
-printf("p-p\n");
+//printf("p-p\n");
 }
 else
 {

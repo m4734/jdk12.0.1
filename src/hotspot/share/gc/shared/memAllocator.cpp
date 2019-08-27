@@ -276,7 +276,10 @@ HeapWord* MemAllocator::allocate_inside_tlab(Allocation& allocation) const {
 	if (_word_size < 512 || true)
 			mem = _thread->tlab().allocate(_word_size);
 	else
+	{
 			mem = _thread->tlab4k().allocate(_word_size);
+			printf("mememe %p\n",mem);
+	}
 
   if (mem != NULL) {
     return mem;
@@ -287,10 +290,9 @@ HeapWord* MemAllocator::allocate_inside_tlab(Allocation& allocation) const {
 }
 
 HeapWord* MemAllocator::allocate_inside_tlab_slow(Allocation& allocation) const {
-
   HeapWord* mem = NULL;
 
-	if (_word_size < 512 || true) //cgmin bad
+	if (_word_size < 512 || true) //cgmin bad impl
 	{
 
   ThreadLocalAllocBuffer& tlab = _thread->tlab();
@@ -354,7 +356,7 @@ HeapWord* MemAllocator::allocate_inside_tlab_slow(Allocation& allocation) const 
 
   tlab.fill(mem, mem + _word_size, allocation._allocated_tlab_size);
 	}
-	else //cgmin bad
+	else //cgmin bad impl
  	{
 
   ThreadLocalAllocBuffer& tlab = _thread->tlab4k();
@@ -382,7 +384,6 @@ HeapWord* MemAllocator::allocate_inside_tlab_slow(Allocation& allocation) const 
   size_t new_tlab_size = tlab.compute_size(_word_size);
 
   tlab.retire_before_allocation();
-
   if (new_tlab_size == 0) {
     return NULL;
   }
@@ -391,6 +392,7 @@ HeapWord* MemAllocator::allocate_inside_tlab_slow(Allocation& allocation) const 
   // between minimal and new_tlab_size is accepted.
   size_t min_tlab_size = ThreadLocalAllocBuffer::compute_min_size(_word_size);
   mem = _heap->allocate_new_tlab(min_tlab_size, new_tlab_size, &allocation._allocated_tlab_size);
+	printf("mem %p\n",mem);
   if (mem == NULL) {
     assert(allocation._allocated_tlab_size == 0,
            "Allocation failed, but actual size was updated. min: " SIZE_FORMAT
@@ -444,7 +446,7 @@ oop MemAllocator::allocate() /*const*/ {
 			_word_size = word_size;
 			*/
 	}
-
+//printf("allocate in\n");
   oop obj = NULL;
   {
     Allocation allocation(*this, &obj);
@@ -453,6 +455,7 @@ oop MemAllocator::allocate() /*const*/ {
       obj = initialize(mem);
     }
   }
+//	printf("allocate out\n");
   return obj;
 }
 
@@ -501,10 +504,11 @@ oop ObjArrayAllocator::initialize(HeapWord* mem) const {
   if (_do_zero) {
     mem_clear(mem);
   }
-	if (false && _length >= 4096) //cgmin
+//	if (_length >= 4096) //cgmin
 //		  arrayOopDesc::set_length(mem, ((_length-1)/512+1)*512);
-		printf("lll %d\n",_length);		  
+//		printf("%p lll %d\n",mem,_length);		  
 //	else
+	
 	  arrayOopDesc::set_length(mem, _length);
   return finish(mem);
 }

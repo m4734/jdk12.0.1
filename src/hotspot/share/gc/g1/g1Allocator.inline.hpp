@@ -128,18 +128,21 @@ inline PLAB* G1PLABAllocator::alloc_buffer(InCSetState dest) {
 
 inline HeapWord* G1PLABAllocator::plab_allocate(InCSetState dest,
                                                 size_t word_sz) {
-	if (word_sz >= 512 && false) // cgmin
-	{
-			dest.set_4k(true);
 
-//printf("%d\n",(int)_survivor_alignment_bytes);
-		word_sz = ((word_sz-1)/512+1)*512;
   PLAB* buffer = alloc_buffer(dest);
-    return buffer->allocate_aligned(word_sz, 4096);
+	if (word_sz >= 512)// && false) // cgmin
+	{
+//			dest.set_4k(true);
+
+//printf("%d\n",(int)_survivor_alignment_bytes)
+//	size_t _word_sz = ((word_sz-1)/512+1)*512;
+	HeapWord* result = buffer->allocate_aligned(word_sz, 4096);
+	if (result != NULL)
+			return result;
 
 //printf("ws %d\n",(int)word_sz);
 	}
-  PLAB* buffer = alloc_buffer(dest);
+//  PLAB* buffer = alloc_buffer(dest);
   if (_survivor_alignment_bytes == 0 || !dest.is_young()) {
     return buffer->allocate(word_sz);
   } else {

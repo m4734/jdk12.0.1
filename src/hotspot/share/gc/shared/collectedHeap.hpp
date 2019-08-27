@@ -299,6 +299,7 @@ class CollectedHeap : public CHeapObj<mtInternal> {
   static size_t min_fill_size() {
     return size_t(align_object_size(oopDesc::header_size()));
   }
+	static size_t min_filler_size();
 
   static void fill_with_objects(HeapWord* start, size_t words, bool zap = true);
 

@@ -60,7 +60,7 @@ inline void G1MarkAndPushClosure::do_cld(ClassLoaderData* cld) {
   _marker->follow_cld(cld);
 }
 
-template <class T> inline void G1AdjustClosure::adjust_pointer(T* p) {
+template <class T> inline void G1AdjustClosure::adjust_pointer(T* p) { //cgmin 0822 check
   T heap_oop = RawAccess<>::oop_load(p);
   if (CompressedOops::is_null(heap_oop)) {
     return;

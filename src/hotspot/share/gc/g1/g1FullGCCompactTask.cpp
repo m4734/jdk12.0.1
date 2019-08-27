@@ -70,11 +70,12 @@ size_t G1FullGCCompactTask::G1CompactRegionClosure::apply(oop obj) {
   // copy object and reinit its mark
   HeapWord* obj_addr = (HeapWord*) obj;
   assert(obj_addr != destination, "everything in this pass should be moving");
-printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
+//printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
 if (size >= 512)
 {
-		printf("f-f\n");
-//printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
+//		printf("f-f\n");
+
+printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
 ++cgmin_b2;
 b2_sum+=size;
 }
