@@ -294,8 +294,6 @@ void ThreadLocalAllocBuffer::set_sample_end() {
 }
 
 Thread* ThreadLocalAllocBuffer::thread() {
-	if (_4k)//cgmin
-	  return (Thread*)(((char*)this) + in_bytes(start_offset()) - in_bytes(Thread::tlab4k_start_offset()));
   return (Thread*)(((char*)this) + in_bytes(start_offset()) - in_bytes(Thread::tlab_start_offset()));
 }
 

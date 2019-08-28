@@ -51,7 +51,6 @@ G1CollectorPolicy::G1CollectorPolicy() {
 
 void G1CollectorPolicy::initialize_alignments() {
 
-printf("cgmin G1 init alignments\n");//cgmin
 
   _space_alignment = HeapRegion::GrainBytes;
   size_t card_table_alignment = CardTableRS::ct_max_alignment_constraint();

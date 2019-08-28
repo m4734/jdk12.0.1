@@ -47,7 +47,6 @@ class ThreadLocalAllocBuffer: public CHeapObj<mtThread> {
   friend class JVMCIVMStructs;
 private:
 
-	bool _4k; //cgmin
 
   HeapWord* _start;                              // address of TLAB
   HeapWord* _top;                                // address after last allocation
@@ -138,7 +137,6 @@ public:
 
   // Allocate size HeapWords. The memory is NOT initialized to zero.
   inline HeapWord* allocate(size_t size);
-	void set_4k(bool in_4k) { _4k = in_4k; }//cgmin
 
   // Reserve space at the end of TLAB
   static size_t end_reserve();

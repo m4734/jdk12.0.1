@@ -1622,7 +1622,6 @@ void CMSCollector::do_compaction_work(bool clear_all_soft_refs) {
 
   gc_tracer->report_gc_end(gc_timer->gc_end(), gc_timer->time_partitions());
 
-printf("cms end\n"); //cgmin
   // For a mark-sweep-compact, compute_new_size() will be called
   // in the heap's do_collection() method.
 }
@@ -5559,7 +5558,6 @@ void CMSCollector::reset_concurrent() {
   }
 
   register_gc_end();
-printf("cms c end\n"); //cgmin
 }
 
 // Same as above but for STW paths
@@ -5571,7 +5569,6 @@ void CMSCollector::reset_stw() {
   _markBitMap.clear_all();
   _collectorState = Idling;
   register_gc_end();
-printf("cms stw end\n"); //cgmin
 }
 
 void CMSCollector::do_CMS_operation(CMS_op_type op, GCCause::Cause gc_cause) {

@@ -75,7 +75,7 @@ protected:
   }
 
 public:
-  oop allocate();
+  oop allocate() const;
   virtual oop initialize(HeapWord* mem) const = 0;
 };
 

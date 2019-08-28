@@ -89,8 +89,6 @@ private:
     OpenArchiveTag        = ArchiveMask | PinnedMask,
     ClosedArchiveTag      = ArchiveMask | PinnedMask + 1
 
-//		,_4kMask								= 64 //cgmin
-
   } Tag;
 
   volatile Tag _tag;
@@ -150,7 +148,6 @@ public:
   // is_pinned regions may be archive or humongous
   bool is_pinned() const { return (get() & PinnedMask) != 0; }
 
-//	bool is_4k() const { return get() & _4kMask != 0; } //cgmin
 
   // Setters
 
@@ -165,7 +162,6 @@ public:
 
   void set_old() { set(OldTag); }
 
-//	void set_4k() { set(_tag | _4kMask); } //cgmin
 
   // Change the current region type to be of an old region type if not already done so.
   // Returns whether the region type has been changed or not.

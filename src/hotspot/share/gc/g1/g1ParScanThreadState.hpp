@@ -52,8 +52,6 @@ class G1ParScanThreadState : public CHeapObj<mtGC> {
 
   G1PLABAllocator*  _plab_allocator;
 
-	G1PLABAllocator*	_plab_allocator_4k; //cgmin
-
   AgeTable          _age_table;
   InCSetState       _dest[InCSetState::Num];
   // Local tenuring threshold.

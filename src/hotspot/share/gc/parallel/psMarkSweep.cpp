@@ -390,7 +390,6 @@ bool PSMarkSweep::invoke_no_policy(bool clear_all_softrefs) {
   _gc_timer->register_gc_end();
 
   _gc_tracer->report_gc_end(_gc_timer->gc_end(), _gc_timer->time_partitions());
-printf("ps mark sweep end?\n"); //cgmin
   return true;
 }
 

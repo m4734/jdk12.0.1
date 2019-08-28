@@ -4136,7 +4136,6 @@ static jint attach_current_thread(JavaVM *vm, void **penv, void *_args, bool dae
   thread->create_stack_guard_pages();
 
   thread->initialize_tlab();
-	thread->initialize_tlab4k(); //cgmin
 
   thread->cache_global_variables();
 

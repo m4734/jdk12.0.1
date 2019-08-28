@@ -47,7 +47,6 @@ G1ParScanThreadState::G1ParScanThreadState(G1CollectedHeap* g1h,
     _ct(g1h->card_table()),
     _closures(NULL),
     _plab_allocator(NULL),
-		_plab_allocator_4k(NULL), //cgmin
     _age_table(false),
     _tenuring_threshold(g1h->g1_policy()->tenuring_threshold()),
     _scanner(g1h, this),
@@ -76,7 +75,6 @@ cgmin_s = cgmin_b = s_sum = b_sum = t_sum = 0;//cgmin init
   memset(_surviving_young_words, 0, real_length * sizeof(size_t));
 
   _plab_allocator = new G1PLABAllocator(_g1h->allocator());
-	_plab_allocator_4k = new G1PLABAllocator(_g1h->allocator_4k()); //cgmin
 
   _dest[InCSetState::NotInCSet]    = InCSetState::NotInCSet;
   // The dest for Young is used when the objects are aged enough to
@@ -94,7 +92,6 @@ void G1ParScanThreadState::flush(size_t* surviving_young_words) {
   _dcq.flush();
   // Update allocation statistics.
   _plab_allocator->flush_and_retire_stats();
-	_plab_allocator_4k->flush_and_retire_stats(); //cgmin
   _g1h->g1_policy()->record_age_table(&_age_table);
 
   uint length = _g1h->collection_set()->young_region_length();
@@ -105,7 +102,6 @@ void G1ParScanThreadState::flush(size_t* surviving_young_words) {
 
 G1ParScanThreadState::~G1ParScanThreadState() {
   delete _plab_allocator;
-	delete _plab_allocator_4k;//cgmin
   delete _closures;
   FREE_C_HEAP_ARRAY(size_t, _surviving_young_words_base);
   delete[] _oops_into_optional_regions;
@@ -170,53 +166,13 @@ HeapWord* G1ParScanThreadState::allocate_in_next_plab(InCSetState const state,
 
   // Right now we only have two types of regions (young / old) so
   // let's keep the logic here simple. We can generalize it when necessary.
- /*
-	if (dest->value() == InCSetState::Young4k) //cgmin plab
-	{
+  if (dest->is_young()) {
     bool plab_refill_in_old_failed = false;
-		HeapWord* _obj_ptr;
-			 _obj_ptr	 = _plab_allocator->allocate(InCSetState::Old4k,
-                                                        word_sz,
-                                                        &plab_refill_in_old_failed);
-			 if (_obj_ptr != NULL)
-			 {
-					 dest->set_old();
-					 dest->set_4k(true);
-					 return obj_ptr;
-			 }
-
-}
-*/
-  if (dest->is_young()) {// || dest->value() == InCSetState::Young4k) { //cgmin plab
-    bool plab_refill_in_old_failed = false;
-		/*
+		
     HeapWord* const obj_ptr = _plab_allocator->allocate(InCSetState::Old,
                                                         word_sz,
                                                         &plab_refill_in_old_failed);
-																												*/
-	  HeapWord* obj_ptr = NULL;
-/*
-		if (dest->is_4k() && false) //cgmin V plab
-			{
-				InCSetState temp;
-				temp.set_old();
-				temp.set_4k(true);
-		 obj_ptr	 = _plab_allocator->allocate(temp,
-                                                        word_sz,
-                                                        &plab_refill_in_old_failed);
-			}
-			*/
-		 if (obj_ptr == NULL)
-		 {
-			 obj_ptr	 = _plab_allocator->allocate(InCSetState::Old,
-                                                        word_sz,
-                                                        &plab_refill_in_old_failed);
-			 /*
-			 if (obj_ptr != NULL)
-				 dest->set_4k(false);
-				 */
-		 }
-
+																												
     // Make sure that we won't attempt to copy any other objects out
     // of a survivor region (given that apparently we cannot allocate
     // any new ones) to avoid coming into this slow path again and again.
@@ -286,32 +242,26 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
     return handle_evacuation_failure_par(old, old_mark);
   }
 
-	G1PLABAllocator *__plab_allocator = _plab_allocator;
 	size_t _word_sz;
 	if (word_sz >= 512 && false) //cgmin V plab
 	{
 			_word_sz = ((word_sz-1)/512+1)*512;
 			printf("ws %lu %lu\n",word_sz,_word_sz);
 //			_word_sz = word_sz;			
-//			dest_state.set_4k(true);	
-//			dest_state.set_4k(false);			
-//			__plab_allocator = _plab_allocator_4k;
 	}
 	else
 	{
-//			dest_state.set_4k(false);
 			_word_sz = word_sz;
-//			__plab_allocator = _plab_allocator;
 	}
 //printf("p0\n");
-  HeapWord* obj_ptr = __plab_allocator->plab_allocate(dest_state, _word_sz);
+  HeapWord* obj_ptr = _plab_allocator->plab_allocate(dest_state, _word_sz);
 //printf("p1\n");
   // PLAB allocations should succeed most of the time, so we'll
   // normally check against NULL once and that's it.
   if (obj_ptr == NULL) {
     bool plab_refill_failed = false;
 //		printf("p2 direct or new\n");
-    obj_ptr = __plab_allocator->allocate_direct_or_new_plab(dest_state, _word_sz, &plab_refill_failed);
+    obj_ptr = _plab_allocator->allocate_direct_or_new_plab(dest_state, _word_sz, &plab_refill_failed);
 //		printf("p3\n");
     if (obj_ptr == NULL) {
 //				printf("p4 next\n");
@@ -326,7 +276,7 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
     }
     if (_g1h->_gc_tracer_stw->should_report_promotion_events()) {
       // The events are checked individually as part of the actual commit
-      report_promotion_event(dest_state, old, _word_sz, age, obj_ptr);
+      report_promotion_event(dest_state, old, _word_sz, age, obj_ptr); //cgmin word_sz?
     }
   }
 
@@ -338,7 +288,7 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   if (_g1h->evacuation_should_fail()) {
     // Doing this after all the allocation attempts also tests the
     // undo_allocation() method too.
-    __plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
+    _plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz); //cgmin word_sz?
     return handle_evacuation_failure_par(old, old_mark);
   }
 #endif // !PRODUCT
@@ -353,7 +303,7 @@ gettimeofday(&tv,NULL);
   const oop obj = oop(obj_ptr);
   const oop forward_ptr = old->forward_to_atomic(obj, old_mark, memory_order_relaxed);
   if (forward_ptr == NULL) {
-    Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz);
+    Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz); //cgmin word sz?
 gettimeofday(&tv2,NULL);
 t_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
 //Tickspan time = Ticks::now()-start;
@@ -387,7 +337,7 @@ s_sum+=word_sz;
       } else {
         obj->set_mark_raw(old_mark->set_age(age));
       }
-      _age_table.add(age, _word_sz); // cgmin plab
+      _age_table.add(age, _word_sz); // cgmin plab word sz?
     } else {
       obj->set_mark_raw(old_mark);
     }
@@ -405,7 +355,7 @@ s_sum+=word_sz;
                                              obj);
     }
 
-    _surviving_young_words[young_index] += _word_sz; //cgmin plab
+    _surviving_young_words[young_index] += _word_sz; //cgmin plab word sz?
 
     if (obj->is_objArray() && arrayOop(obj)->length() >= ParGCArrayScanChunk) {
       // We keep track of the next start index in the length field of
@@ -420,7 +370,7 @@ s_sum+=word_sz;
     }
     return obj;
   } else {
-    __plab_allocator->undo_allocation(dest_state, obj_ptr, _word_sz); //cgmin plab
+    _plab_allocator->undo_allocation(dest_state, obj_ptr, _word_sz); //cgmin plab word sz?
     return forward_ptr;
   }
 }

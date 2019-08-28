@@ -39,12 +39,6 @@ G1EvacStats* G1CollectedHeap::alloc_buffer_stats(InCSetState dest) {
       return &_survivor_evac_stats;
     case InCSetState::Old:
       return &_old_evac_stats;
-/*
-    case InCSetState::Young4k: // cgmin
-      return &_survivor_evac_stats;
-    case InCSetState::Old4k:
-      return &_old_evac_stats;
-*/
     default:
       ShouldNotReachHere();
       return NULL; // Keep some compilers happy

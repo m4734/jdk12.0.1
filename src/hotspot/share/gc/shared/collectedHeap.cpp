@@ -366,11 +366,11 @@ size_t CollectedHeap::filler_array_hdr_size() {
 size_t CollectedHeap::filler_array_min_size() {
   return align_object_size(filler_array_hdr_size()); // align to MinObjAlignment
 }
-
-size_t CollectedHeap::min_filler_size() {
+/*
+size_t CollectedHeap::min_filler_size() { //cgmin
 		return filler_array_min_size();
 }
-
+*/
 #ifdef ASSERT
 void CollectedHeap::fill_args_check(HeapWord* start, size_t words)
 {
@@ -489,10 +489,8 @@ void CollectedHeap::ensure_parsability(bool retire_tlabs) {
     if (UseTLAB) {
       if (retire_tlabs) {
         thread->tlab().retire(&stats);
-//				thread->tlab_4k().restire(&stats); //cgmin tlab
       } else {
         thread->tlab().make_parsable();
-//				thread->tlab_4k().make_parsable(); //cgmin tlab
       }
     }
   }
@@ -507,7 +505,6 @@ void CollectedHeap::resize_all_tlabs() {
   if (UseTLAB && ResizeTLAB) {
     for (JavaThreadIteratorWithHandle jtiwh; JavaThread *thread = jtiwh.next(); ) {
       thread->tlab().resize();
-//			thread->tlab_4k().resize(); //cgmin tlab
     }
   }
 }

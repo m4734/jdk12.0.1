@@ -1761,7 +1761,6 @@ JavaThread::~JavaThread() {
 void JavaThread::run() {
   // initialize thread-local alloc buffer related fields
   this->initialize_tlab();
-	this->initialize_tlab4k();//cgmin
 
   // used to test validity of stack trace backs
   this->record_base_of_stack_pointer();

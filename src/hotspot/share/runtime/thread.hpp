@@ -368,8 +368,6 @@ class Thread: public ThreadShadow {
 
   ThreadLocalAllocBuffer _tlab;                 // Thread-local eden
 
-	ThreadLocalAllocBuffer _tlab4k;//cgmin
-
   jlong _allocated_bytes;                       // Cumulative number of bytes allocated on
                                                 // the Java heap
   ThreadHeapSampler _heap_sampler;              // For use when sampling the memory.
@@ -547,19 +545,11 @@ class Thread: public ThreadShadow {
 
   // Thread-Local Allocation Buffer (TLAB) support
   ThreadLocalAllocBuffer& tlab()                 { return _tlab; }
-	ThreadLocalAllocBuffer& tlab4k()								{return _tlab4k; } //cgmin
   void initialize_tlab() {
     if (UseTLAB) {
       tlab().initialize();
-			tlab().set_4k(false);
     }
   }
-	void initialize_tlab4k() { //cgmin
-		if (UseTLAB) {
-				tlab4k().initialize();
-				tlab4k().set_4k(true);
-		}
-	}
 
   jlong allocated_bytes()               { return _allocated_bytes; }
   void set_allocated_bytes(jlong value) { _allocated_bytes = value; }
@@ -742,14 +732,6 @@ protected:
   static ByteSize tlab_end_offset()              { return byte_offset_of(Thread, _tlab) + ThreadLocalAllocBuffer::end_offset(); }
   static ByteSize tlab_top_offset()              { return byte_offset_of(Thread, _tlab) + ThreadLocalAllocBuffer::top_offset(); }
   static ByteSize tlab_pf_top_offset()           { return byte_offset_of(Thread, _tlab) + ThreadLocalAllocBuffer::pf_top_offset(); }
-
-//cgmin
-
-  static ByteSize tlab4k_start_offset()            { return byte_offset_of(Thread, _tlab4k) + ThreadLocalAllocBuffer::start_offset(); }
-  static ByteSize tlab4k_end_offset()              { return byte_offset_of(Thread, _tlab4k) + ThreadLocalAllocBuffer::end_offset(); }
-  static ByteSize tlab4k_top_offset()              { return byte_offset_of(Thread, _tlab4k) + ThreadLocalAllocBuffer::top_offset(); }
-  static ByteSize tlab4k_pf_top_offset()           { return byte_offset_of(Thread, _tlab4k) + ThreadLocalAllocBuffer::pf_top_offset(); }
-
 
   static ByteSize allocated_bytes_offset()       { return byte_offset_of(Thread, _allocated_bytes); }
 

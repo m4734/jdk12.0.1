@@ -1980,7 +1980,6 @@ bool PSParallelCompact::invoke_no_policy(bool maximum_heap_compaction) {
   AdaptiveSizePolicyOutput::print(size_policy, heap->total_collections());
 
   _gc_timer.register_gc_end();
-printf("parallel compact end\n");//cgmin
   _gc_tracer.report_dense_prefix(dense_prefix(old_space_id));
   _gc_tracer.report_gc_end(_gc_timer.gc_end(), _gc_timer.time_partitions());
 
