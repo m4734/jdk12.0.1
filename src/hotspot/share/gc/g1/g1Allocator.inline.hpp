@@ -121,7 +121,7 @@ inline PLAB* G1PLABAllocator::alloc_buffer(InCSetState dest) {
          "Allocation buffer index out of bounds: " CSETSTATE_FORMAT, dest.value());
   assert(_alloc_buffers[dest.value()] != NULL,
          "Allocation buffer is NULL: " CSETSTATE_FORMAT, dest.value());
-	if (/*dest.is_4k() &&*/ (dest.is_young() || dest.is_old()))
+	if (false && /*dest.is_4k() &&*/ (dest.is_young() || dest.is_old()))
 	  return _alloc_buffers[dest.value()+2];
   return _alloc_buffers[dest.value()];
 }
