@@ -285,7 +285,7 @@ HeapWord* G1PLABAllocator::allocate_direct_or_new_plab(InCSetState dest,
   // ParallelGCBufferWastePct in the existing buffer.
   if ((required_in_plab <= plab_word_size) &&
     may_throw_away_buffer(required_in_plab, plab_word_size)) {
-
+/*
 //		if (plab_word_size >= 512) //cgmin
 		if (word_sz >= 512 && false)		
 		{
@@ -293,12 +293,12 @@ HeapWord* G1PLABAllocator::allocate_direct_or_new_plab(InCSetState dest,
 //				word_sz = ((word_sz-1)/512+1)*512;
 		
 		}
-
+*/
     PLAB* alloc_buf = alloc_buffer(dest);
     alloc_buf->retire();
 
-    size_t actual_plab_size = 0;
-//		size_t actual_plab_size = 2;     //cgmin no 4k
+//    size_t actual_plab_size = 0;
+		size_t actual_plab_size = 2;     //cgmin no 4k
     HeapWord* buf = _allocator->par_allocate_during_gc(dest,
                                                        required_in_plab,
                                                        plab_word_size,

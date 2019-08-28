@@ -40,7 +40,7 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
                                                   size_t* actual_size) {
 //		return par_allocate_impl(min_word_size,desired_word_size,actual_size);
   HeapWord* obj = top();
-	if (*actual_size != 2 && desired_word_size /*min_word_size*/ >= 512 && false) //cgmin alloc
+	if (*actual_size != 2 && desired_word_size /*min_word_size*/ >= 512  && false) //cgmin alloc
 	{
 			HeapWord* obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
 			
@@ -88,7 +88,7 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
     HeapWord* obj = top();
 		HeapWord* obj2;
 		size_t _desired_word_size,_min_word_size,pd;
-		if (*actual_size != 2 && desired_word_size/*min_word_size*/ >= 512 && false ) // cgmin par alloc
+		if (*actual_size != 2 && desired_word_size/*min_word_size*/ >= 512  && false ) // cgmin par alloc
 		{
 				obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
 //				printf("ai2 %p %p\n",obj,obj2);
@@ -142,7 +142,7 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
 inline HeapWord* G1ContiguousSpace::allocate(size_t min_word_size,
                                              size_t desired_word_size,
                                              size_t* actual_size) {
-//		*actual_size = 1; //cgmin 0828 bot
+		*actual_size = 1; //cgmin 0828 bot
   HeapWord* res = allocate_impl(min_word_size, desired_word_size, actual_size);
   if (res != NULL) {
 //				printf("%p %lu %lu %lu\n",res,min_word_size,desired_word_size,*actual_size);
@@ -314,7 +314,7 @@ inline HeapWord* HeapRegion::allocate_no_bot_updates(size_t min_word_size,
                                                      size_t desired_word_size,
                                                      size_t* actual_word_size) {
   assert(is_young(), "we can only skip BOT updates on young regions");
-//	*actual_word_size = 0; //cgmin bot
+	*actual_word_size = 0; //cgmin bot
   return allocate_impl(min_word_size, desired_word_size, actual_word_size);
 }
 

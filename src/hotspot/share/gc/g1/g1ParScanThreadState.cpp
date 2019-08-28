@@ -242,30 +242,19 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
     return handle_evacuation_failure_par(old, old_mark);
   }
 
-	size_t _word_sz;
-	if (word_sz >= 512 && false) //cgmin V plab
-	{
-			_word_sz = ((word_sz-1)/512+1)*512;
-			printf("ws %lu %lu\n",word_sz,_word_sz);
-//			_word_sz = word_sz;			
-	}
-	else
-	{
-			_word_sz = word_sz;
-	}
 //printf("p0\n");
-  HeapWord* obj_ptr = _plab_allocator->plab_allocate(dest_state, _word_sz);
+  HeapWord* obj_ptr = _plab_allocator->plab_allocate(dest_state, word_sz);
 //printf("p1\n");
   // PLAB allocations should succeed most of the time, so we'll
   // normally check against NULL once and that's it.
   if (obj_ptr == NULL) {
     bool plab_refill_failed = false;
 //		printf("p2 direct or new\n");
-    obj_ptr = _plab_allocator->allocate_direct_or_new_plab(dest_state, _word_sz, &plab_refill_failed);
+    obj_ptr = _plab_allocator->allocate_direct_or_new_plab(dest_state, word_sz, &plab_refill_failed);
 //		printf("p3\n");
     if (obj_ptr == NULL) {
 //				printf("p4 next\n");
-      obj_ptr = allocate_in_next_plab(state, &dest_state, _word_sz, plab_refill_failed);
+      obj_ptr = allocate_in_next_plab(state, &dest_state, word_sz, plab_refill_failed);
 //			printf("p5\n");
       if (obj_ptr == NULL) {
 //					printf("p6 fail\n");
@@ -276,7 +265,7 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
     }
     if (_g1h->_gc_tracer_stw->should_report_promotion_events()) {
       // The events are checked individually as part of the actual commit
-      report_promotion_event(dest_state, old, _word_sz, age, obj_ptr); //cgmin word_sz?
+      report_promotion_event(dest_state, old, word_sz, age, obj_ptr); 
     }
   }
 
@@ -337,7 +326,7 @@ s_sum+=word_sz;
       } else {
         obj->set_mark_raw(old_mark->set_age(age));
       }
-      _age_table.add(age, _word_sz); // cgmin plab word sz?
+      _age_table.add(age, word_sz); 
     } else {
       obj->set_mark_raw(old_mark);
     }
@@ -355,7 +344,7 @@ s_sum+=word_sz;
                                              obj);
     }
 
-    _surviving_young_words[young_index] += _word_sz; //cgmin plab word sz?
+    _surviving_young_words[young_index] += word_sz;
 
     if (obj->is_objArray() && arrayOop(obj)->length() >= ParGCArrayScanChunk) {
       // We keep track of the next start index in the length field of
@@ -370,7 +359,7 @@ s_sum+=word_sz;
     }
     return obj;
   } else {
-    _plab_allocator->undo_allocation(dest_state, obj_ptr, _word_sz); //cgmin plab word sz?
+    _plab_allocator->undo_allocation(dest_state, obj_ptr, word_sz);
     return forward_ptr;
   }
 }
