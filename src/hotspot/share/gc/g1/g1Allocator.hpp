@@ -104,8 +104,14 @@ public:
   inline HeapWord* attempt_allocation(size_t min_word_size,
                                       size_t desired_word_size,
                                       size_t* actual_word_size);
+  inline HeapWord* attempt_allocation(size_t min_word_size,
+                                      size_t desired_word_size,
+                                      size_t* actual_word_size, HeapWord** obj0); //cgmin
+
   inline HeapWord* attempt_allocation_locked(size_t word_size);
+  inline HeapWord* attempt_allocation_locked(size_t word_size,HeapWord** obj0); //cgmin
   inline HeapWord* attempt_allocation_force(size_t word_size);
+  inline HeapWord* attempt_allocation_force(size_t word_size,HeapWord** obj0); //cgmin
 
   size_t unsafe_max_tlab_alloc();
 

@@ -125,11 +125,14 @@ class G1ContiguousSpace: public CompactibleSpace {
   // This version assumes that all allocation requests to this Space are properly
   // synchronized.
   inline HeapWord* allocate_impl(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size);
+  inline HeapWord* allocate_impl(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size, HeapWord** obj0); //cgmin 0828 dirty card
+
   // Try to allocate at least min_word_size and up to desired_size from this Space.
   // Returns NULL if not possible, otherwise sets actual_word_size to the amount of
   // space allocated.
   // This version synchronizes with other calls to par_allocate_impl().
   inline HeapWord* par_allocate_impl(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size);
+  inline HeapWord* par_allocate_impl(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size, HeapWord** obj0); //cgmin 0828
 
  public:
   void reset_after_compaction() { set_top(compaction_top()); }
@@ -165,8 +168,10 @@ class G1ContiguousSpace: public CompactibleSpace {
   // Allocation (return NULL if full).  Assumes the caller has established
   // mutually exclusive access to the space.
   HeapWord* allocate(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size);
-  // Allocation (return NULL if full).  Enforces mutual exclusion internally.
+   HeapWord* allocate(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size,HeapWord** obj0); //cgmin
+ // Allocation (return NULL if full).  Enforces mutual exclusion internally.
   HeapWord* par_allocate(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size);
+  HeapWord* par_allocate(size_t min_word_size, size_t desired_word_size, size_t* actual_word_size,HeapWord** obj0); //cgmin
 
   virtual HeapWord* allocate(size_t word_size);
   virtual HeapWord* par_allocate(size_t word_size);
@@ -361,9 +366,13 @@ class HeapRegion: public G1ContiguousSpace {
   // Update heap region to be consistent after compaction.
   void complete_compaction();
 
-  inline HeapWord* par_allocate_no_bot_updates(size_t min_word_size, size_t desired_word_size, size_t* word_size);
+	inline HeapWord* par_allocate_no_bot_updates(size_t min_word_size, size_t desired_word_size, size_t* word_size);
+
+  inline HeapWord* par_allocate_no_bot_updates(size_t min_word_size, size_t desired_word_size, size_t* word_size,HeapWord** obj0); //cgmin
+
   inline HeapWord* allocate_no_bot_updates(size_t word_size);
   inline HeapWord* allocate_no_bot_updates(size_t min_word_size, size_t desired_word_size, size_t* actual_size);
+  inline HeapWord* allocate_no_bot_updates(size_t min_word_size, size_t desired_word_size, size_t* actual_size,HeapWord** obj0); //cgmin
 
   // If this region is a member of a HeapRegionManager, the index in that
   // sequence, otherwise -1.

@@ -40,27 +40,42 @@ inline SurvivorGCAllocRegion* G1Allocator::survivor_gc_alloc_region() {
 inline OldGCAllocRegion* G1Allocator::old_gc_alloc_region() {
   return &_old_gc_alloc_region;
 }
-
 inline HeapWord* G1Allocator::attempt_allocation(size_t min_word_size,
                                                  size_t desired_word_size,
                                                  size_t* actual_word_size) {
-  HeapWord* result = mutator_alloc_region()->attempt_retained_allocation(min_word_size, desired_word_size, actual_word_size);
+		HeapWord* temp;
+		return attempt_allocation(min_word_size,desired_word_size,actual_word_size,&temp);
+}
+
+inline HeapWord* G1Allocator::attempt_allocation(size_t min_word_size,
+                                                 size_t desired_word_size,
+                                                 size_t* actual_word_size,HeapWord** obj0) { //cgmin
+  HeapWord* result = mutator_alloc_region()->attempt_retained_allocation(min_word_size, desired_word_size, actual_word_size,obj0);
   if (result != NULL) {
     return result;
   }
-  return mutator_alloc_region()->attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+  return mutator_alloc_region()->attempt_allocation(min_word_size, desired_word_size, actual_word_size,obj0);
+}
+inline HeapWord* G1Allocator::attempt_allocation_locked(size_t word_size) {
+		HeapWord* temp;
+		return attempt_allocation_locked(word_size,&temp);
 }
 
-inline HeapWord* G1Allocator::attempt_allocation_locked(size_t word_size) {
-	
-  HeapWord* result = mutator_alloc_region()->attempt_allocation_locked(word_size);
+inline HeapWord* G1Allocator::attempt_allocation_locked(size_t word_size,HeapWord** obj0) { //cgmin
+size_t temp;	
+  HeapWord* result = mutator_alloc_region()->attempt_allocation_locked(word_size,word_size,&temp,obj0);
   assert(result != NULL || mutator_alloc_region()->get() == NULL,
          "Must not have a mutator alloc region if there is no memory, but is " PTR_FORMAT, p2i(mutator_alloc_region()->get()));
   return result;
 }
-
 inline HeapWord* G1Allocator::attempt_allocation_force(size_t word_size) {
   return mutator_alloc_region()->attempt_allocation_force(word_size);
+
+}
+
+inline HeapWord* G1Allocator::attempt_allocation_force(size_t word_size, HeapWord** obj0) { //cgmin fast
+		size_t temp;
+  return mutator_alloc_region()->attempt_allocation_force(word_size,word_size,&temp,obj0);
 }
 
 inline PLAB* G1PLABAllocator::alloc_buffer(InCSetState dest) {

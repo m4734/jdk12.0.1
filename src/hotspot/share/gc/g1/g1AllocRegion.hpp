@@ -89,6 +89,7 @@ private:
   // G1CollectedHeap::allocate_new_alloc_region() and tells it to try
   // to allocate a new region even if the max has been reached.
   HeapWord* new_alloc_region_and_allocate(size_t word_size, bool force);
+  HeapWord* new_alloc_region_and_allocate(size_t word_size, bool force,HeapWord** obj0); //cgmin
 
 protected:
   // Reset the alloc region to point a the dummy region.
@@ -97,6 +98,8 @@ protected:
   // Perform a non-MT-safe allocation out of the given region.
   inline HeapWord* allocate(HeapRegion* alloc_region,
                             size_t word_size);
+  inline HeapWord* allocate(HeapRegion* alloc_region,
+                            size_t word_size,HeapWord** obj0); //cgmin
 
   // Perform a MT-safe allocation out of the given region.
   inline HeapWord* par_allocate(HeapRegion* alloc_region,
@@ -109,6 +112,11 @@ protected:
                                 size_t min_word_size,
                                 size_t desired_word_size,
                                 size_t* actual_word_size);
+
+	inline HeapWord* par_allocate(HeapRegion* alloc_region,
+                                size_t min_word_size,
+                                size_t desired_word_size,
+                                size_t* actual_word_size, HeapWord** obj0); //cgmin
 
   // Ensure that the region passed as a parameter has been filled up
   // so that noone else can allocate out of it any more.
@@ -160,6 +168,11 @@ public:
                                       size_t desired_word_size,
                                       size_t* actual_word_size);
 
+  inline HeapWord* attempt_allocation(size_t min_word_size,
+                                      size_t desired_word_size,
+                                      size_t* actual_word_size, HeapWord** obj0); //cgmin
+
+
   // Second-level allocation: Should be called while holding a
   // lock. It will try to first allocate lock-free out of the active
   // region or, if it's unable to, it will try to replace the active
@@ -174,6 +187,10 @@ public:
   inline HeapWord* attempt_allocation_locked(size_t min_word_size,
                                              size_t desired_word_size,
                                              size_t* actual_word_size);
+
+	inline HeapWord* attempt_allocation_locked(size_t min_word_size,
+                                             size_t desired_word_size,
+                                             size_t* actual_word_size,HeapWord** obj0); //cgmin
 
   // Should be called to allocate a new region even if the max of this
   // type of regions has been reached. Should only be called if other
@@ -238,6 +255,9 @@ public:
   inline HeapWord* attempt_retained_allocation(size_t min_word_size,
                                                size_t desired_word_size,
                                                size_t* actual_word_size);
+  inline HeapWord* attempt_retained_allocation(size_t min_word_size,
+                                               size_t desired_word_size,
+                                               size_t* actual_word_size,HeapWord** obj0); //cgmin
 
   // This specialization of release() makes sure that the retained alloc
   // region is retired and set to NULL.

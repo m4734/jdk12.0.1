@@ -5,7 +5,7 @@ TLAB allocate obj 0xff40f1e0 obj2 0xff410000 pd 452
 TLAB allocate obj 0xff412038 obj2 0xff413000 pd 505
 TLAB allocate obj 0xff41bde8 obj2 0xff41c000 pd 67
 Using scaled threading model. 48 processors detected, 48 threads used to drive the workload, in a possible range of [1,4000]
-TLAB allocate obj 0xff44e7e8 obj2 0xff44f000 pd 259
+TLAB allocate obj 0xff44e8a8 obj2 0xff44f000 pd 235
 TLAB allocate obj 0xff459278 obj2 0xff45a000 pd 433
 TLAB allocate obj 0xff45d690 obj2 0xff45e000 pd 302
 TLAB allocate obj 0xff460318 obj2 0xff461000 pd 413
@@ -36,7 +36,7 @@ TLAB allocate obj 0xff4ec568 obj2 0xff4ed000 pd 339
 TLAB allocate obj 0xff4ee7e8 obj2 0xff4ef000 pd 259
 TLAB allocate obj 0xff4f14b8 obj2 0xff4f2000 pd 361
 TLAB allocate obj 0xff4fb8f8 obj2 0xff4fc000 pd 225
-TLAB allocate obj 0xff521550 obj2 0xff522000 pd 342
+TLAB allocate obj 0xff5217d8 obj2 0xff522000 pd 261
 TLAB allocate obj 0xff525f68 obj2 0xff526000 pd 19
 TLAB allocate obj 0xff52ac38 obj2 0xff52b000 pd 121
 TLAB allocate obj 0xff52cc10 obj2 0xff52d000 pd 126
@@ -78,7 +78,7 @@ TLAB allocate obj 0xff06efe8 obj2 0xff06f000 pd 3
 TLAB allocate obj 0xff0768e0 obj2 0xff077000 pd 228
 TLAB allocate obj 0xff080270 obj2 0xff081000 pd 434
 TLAB allocate obj 0xff09d8e8 obj2 0xff09e000 pd 227
-TLAB allocate obj 0xff0fde08 obj2 0xff0fe000 pd 63
+TLAB allocate obj 0xff0fde28 obj2 0xff0fe000 pd 59
 TLAB allocate obj 0xff100010 obj2 0xff101000 pd 510
 TLAB allocate obj 0xff109990 obj2 0xff10a000 pd 206
 TLAB allocate obj 0xff111be0 obj2 0xff112000 pd 132
@@ -121,30 +121,30 @@ TLAB allocate obj 0xfec92a98 obj2 0xfec93000 pd 173
 TLAB allocate obj 0xfec98260 obj2 0xfec99000 pd 436
 TLAB allocate obj 0xfecab458 obj2 0xfecac000 pd 373
 TLAB allocate obj 0xfecb8a00 obj2 0xfecb9000 pd 192
-TLAB allocate obj 0xfecf1358 obj2 0xfecf2000 pd 405
-TLAB allocate obj 0xfecf6ac0 obj2 0xfecf7000 pd 168
-TLAB allocate obj 0xfed090c8 obj2 0xfed0a000 pd 487
-TLAB allocate obj 0xfed11d28 obj2 0xfed12000 pd 91
-TLAB allocate obj 0xfed1d650 obj2 0xfed1e000 pd 310
-TLAB allocate obj 0xfed22688 obj2 0xfed23000 pd 303
-TLAB allocate obj 0xfed27cc8 obj2 0xfed28000 pd 103
-TLAB allocate obj 0xfed2f598 obj2 0xfed30000 pd 333
-TLAB allocate obj 0xfed35630 obj2 0xfed36000 pd 314
-TLAB allocate obj 0xfed609f0 obj2 0xfed61000 pd 194
-TLAB allocate obj 0xfed65778 obj2 0xfed66000 pd 273
-TLAB allocate obj 0xfed6e578 obj2 0xfed6f000 pd 337
-TLAB allocate obj 0xfed94c18 obj2 0xfed95000 pd 125
-TLAB allocate obj 0xfeda1058 obj2 0xfeda2000 pd 501
-TLAB allocate obj 0xfedb6238 obj2 0xfedb7000 pd 441
-TLAB allocate obj 0xfedceb78 obj2 0xfedcf000 pd 145
-TLAB allocate obj 0xfee9a138 obj2 0xfee9b000 pd 473
-TLAB allocate obj 0xfee9c038 obj2 0xfee9d000 pd 505
-TLAB allocate obj 0xfeeb2e30 obj2 0xfeeb3000 pd 58
-TLAB allocate obj 0xfeeb5860 obj2 0xfeeb6000 pd 244
+TLAB allocate obj 0xfeced618 obj2 0xfecee000 pd 317
+TLAB allocate obj 0xfecf3420 obj2 0xfecf4000 pd 380
+TLAB allocate obj 0xfecf8c10 obj2 0xfecf9000 pd 126
+TLAB allocate obj 0xfed04650 obj2 0xfed05000 pd 310
+TLAB allocate obj 0xfed09688 obj2 0xfed0a000 pd 303
+TLAB allocate obj 0xfed0ecc8 obj2 0xfed0f000 pd 103
+TLAB allocate obj 0xfed16598 obj2 0xfed17000 pd 333
+TLAB allocate obj 0xfed1c630 obj2 0xfed1d000 pd 314
+TLAB allocate obj 0xfed479e8 obj2 0xfed48000 pd 195
+TLAB allocate obj 0xfed5df48 obj2 0xfed5e000 pd 23
+TLAB allocate obj 0xfed62778 obj2 0xfed63000 pd 273
+TLAB allocate obj 0xfed6b578 obj2 0xfed6c000 pd 337
+TLAB allocate obj 0xfed99940 obj2 0xfed9a000 pd 216
+TLAB allocate obj 0xfed9e978 obj2 0xfed9f000 pd 209
+TLAB allocate obj 0xfedab568 obj2 0xfedac000 pd 339
+TLAB allocate obj 0xfedbfd28 obj2 0xfedc0000 pd 91
+TLAB allocate obj 0xfee98178 obj2 0xfee99000 pd 465
+TLAB allocate obj 0xfee9a038 obj2 0xfee9b000 pd 505
+TLAB allocate obj 0xfeeb0e30 obj2 0xfeeb1000 pd 58
+TLAB allocate obj 0xfeeb3860 obj2 0xfeeb4000 pd 244
 par_allocate_impl obj 0xfe800800 obj2 0xfe801000 pd 256
-TLAB allocate obj 0xfeeed200 obj2 0xfeeee000 pd 448
-TLAB allocate obj 0xfef04ad8 obj2 0xfef05000 pd 165
-TLAB allocate obj 0xfeffc2c0 obj2 0xfeffd000 pd 424
+TLAB allocate obj 0xfeeeb200 obj2 0xfeeec000 pd 448
+TLAB allocate obj 0xfef02ad8 obj2 0xfef03000 pd 165
+TLAB allocate obj 0xfeffa2c0 obj2 0xfeffb000 pd 424
 par_allocate_impl obj 0xfe400800 obj2 0xfe401000 pd 256
 TLAB allocate obj 0xfe464650 obj2 0xfe465000 pd 310
 TLAB allocate obj 0xfe466bd8 obj2 0xfe467000 pd 133
@@ -235,30 +235,30 @@ TLAB allocate obj 0xfe632380 obj2 0xfe633000 pd 400
 TLAB allocate obj 0xfe6397f0 obj2 0xfe63a000 pd 258
 TLAB allocate obj 0xfe71b100 obj2 0xfe71c000 pd 480
 TLAB allocate obj 0xfe71d060 obj2 0xfe71e000 pd 500
-TLAB allocate obj 0xfe7af5f8 obj2 0xfe7b0000 pd 321
+TLAB allocate obj 0xfe7ac688 obj2 0xfe7ad000 pd 303
 par_allocate_impl obj 0xfe000800 obj2 0xfe001000 pd 256
-TLAB allocate obj 0xfe02bc28 obj2 0xfe02c000 pd 123
-TLAB allocate obj 0xfe0bded0 obj2 0xfe0be000 pd 38
+TLAB allocate obj 0xfe02bb48 obj2 0xfe02c000 pd 151
+TLAB allocate obj 0xfe0bdf00 obj2 0xfe0be000 pd 32
 TLAB allocate obj 0xfe1339d0 obj2 0xfe134000 pd 198
 par_allocate_impl obj 0xfdc00800 obj2 0xfdc01000 pd 256
-TLAB allocate obj 0xfdc37658 obj2 0xfdc38000 pd 309
-TLAB allocate obj 0xfdcd4590 obj2 0xfdcd5000 pd 334
-TLAB allocate obj 0xfdd437e0 obj2 0xfdd44000 pd 260
+TLAB allocate obj 0xfe237b00 obj2 0xfe238000 pd 160
+TLAB allocate obj 0xfe2d4600 obj2 0xfe2d5000 pd 320
+TLAB allocate obj 0xfe3437e0 obj2 0xfe344000 pd 260
+TLAB allocate obj 0xfde47c10 obj2 0xfde48000 pd 126
+TLAB allocate obj 0xfdf4a4a8 obj2 0xfdf4b000 pd 363
 par_allocate_impl obj 0xfd800800 obj2 0xfd801000 pd 256
-TLAB allocate obj 0xfd8465c0 obj2 0xfd847000 pd 328
-TLAB allocate obj 0xfd9494a8 obj2 0xfd94a000 pd 363
-TLAB allocate obj 0xfda4f4f0 obj2 0xfda50000 pd 354
-TLAB allocate obj 0xfdb03178 obj2 0xfdb04000 pd 465
-TLAB allocate obj 0xfdb63028 obj2 0xfdb64000 pd 507
+TLAB allocate obj 0xfd851620 obj2 0xfd852000 pd 316
+TLAB allocate obj 0xfd904d78 obj2 0xfd905000 pd 81
+TLAB allocate obj 0xfd964028 obj2 0xfd965000 pd 507
+TLAB allocate obj 0xfda67638 obj2 0xfda68000 pd 313
+TLAB allocate obj 0xfdb5faf0 obj2 0xfdb60000 pd 162
+TLAB allocate obj 0xfdb61060 obj2 0xfdb62000 pd 500
+TLAB allocate obj 0xfdbdf148 obj2 0xfdbe0000 pd 471
 par_allocate_impl obj 0xfd400800 obj2 0xfd401000 pd 256
-TLAB allocate obj 0xfd467088 obj2 0xfd468000 pd 495
-TLAB allocate obj 0xfd55fdc0 obj2 0xfd560000 pd 72
-TLAB allocate obj 0xfd561060 obj2 0xfd562000 pd 500
-TLAB allocate obj 0xfd5df148 obj2 0xfd5e0000 pd 471
+TLAB allocate obj 0xfd44bfa8 obj2 0xfd44c000 pd 11
+TLAB allocate obj 0xfd4cb9a8 obj2 0xfd4cc000 pd 203
+TLAB allocate obj 0xfd533a90 obj2 0xfd534000 pd 174
 par_allocate_impl obj 0xfd000800 obj2 0xfd001000 pd 256
-TLAB allocate obj 0xfd04a9f0 obj2 0xfd04b000 pd 194
-TLAB allocate obj 0xfd0ca9a8 obj2 0xfd0cb000 pd 203
-TLAB allocate obj 0xfd132a90 obj2 0xfd133000 pd 174
 par_allocate_impl obj 0xfcc00800 obj2 0xfcc01000 pd 256
 par_allocate_impl obj 0xfc800800 obj2 0xfc801000 pd 256
 par_allocate_impl obj 0xfc400800 obj2 0xfc401000 pd 256
@@ -274,32 +274,34 @@ par_allocate_impl obj 0xfa000800 obj2 0xfa001000 pd 256
 par_allocate_impl obj 0xf9c00800 obj2 0xf9c01000 pd 256
 par_allocate_impl obj 0xf9800800 obj2 0xf9801000 pd 256
 par_allocate_impl obj 0xf9400800 obj2 0xf9401000 pd 256
-[4.772s][error][gc,verify] == CT verification failed: [0x00007f973aaa5000,0x00007f973aaa6fff]
-[4.772s][error][gc,verify] ==   expecting value: 32
-[4.772s][error][gc,verify] ==   card 0x00007f973aaa5004 [0x00000000ff000800,0x00000000ff000a00], val: -1
-[4.772s][error][gc,verify] ==   card 0x00007f973aaa5005 [0x00000000ff000a00,0x00000000ff000c00], val: -1
-[4.772s][error][gc,verify] ==   card 0x00007f973aaa5006 [0x00000000ff000c00,0x00000000ff000e00], val: -1
-[4.772s][error][gc,verify] ==   card 0x00007f973aaa5007 [0x00000000ff000e00,0x00000000ff001000], val: -1
+vr 0x7fc6014b3000 0x7fc6014b4fff
+vr 0x7fc6014b1000 0x7fc6014b2fff
+[4.838s][error][gc,verify] == CT verification failed: [0x00007fc6014b1000,0x00007fc6014b2fff]
+[4.838s][error][gc,verify] ==   expecting value: 32
+[4.838s][error][gc,verify] ==   card 0x00007fc6014b1004 [0x00000000ff000800,0x00000000ff000a00], val: -1
+[4.838s][error][gc,verify] ==   card 0x00007fc6014b1005 [0x00000000ff000a00,0x00000000ff000c00], val: -1
+[4.838s][error][gc,verify] ==   card 0x00007fc6014b1006 [0x00000000ff000c00,0x00000000ff000e00], val: -1
+[4.838s][error][gc,verify] ==   card 0x00007fc6014b1007 [0x00000000ff000e00,0x00000000ff001000], val: -1
 # To suppress the following error report, specify this argument
-# after -XX: or in .hotspotrc:  SuppressErrorAt=/cardTable.cpp:497
+# after -XX: or in .hotspotrc:  SuppressErrorAt=/cardTable.cpp:498
 #
 # A fatal error has been detected by the Java Runtime Environment:
 #
-#  Internal Error (/home/dcslab/cgmin/jdk12.0.1/src/hotspot/share/gc/shared/cardTable.cpp:497), pid=18741, tid=18748
+#  Internal Error (/home/dcslab/cgmin/jdk12.0.1/src/hotspot/share/gc/shared/cardTable.cpp:498), pid=31112, tid=31119
 #  guarantee(!failures) failed: there should not have been any failures
 #
 # JRE version: OpenJDK Runtime Environment (12.0.1) (slowdebug build 12.0.1-internal+0-adhoc.root.jdk12.0.1)
 # Java VM: OpenJDK 64-Bit Server VM (slowdebug 12.0.1-internal+0-adhoc.root.jdk12.0.1, mixed mode, sharing, tiered, compressed oops, g1 gc, linux-amd64)
 # Problematic frame:
-# V  [libjvm.so+0x73199d]  CardTable::verify_region(MemRegion, signed char, bool)+0x1d5
+# V  [libjvm.so+0x7319b9]  CardTable::verify_region(MemRegion, signed char, bool)+0x1f1
 #
 # No core dump will be written. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
 #
 # An error report file with more information is saved as:
-# /home/dcslab/cgmin/jdk12.0.1/hs_err_pid18741.log
+# /home/dcslab/cgmin/jdk12.0.1/hs_err_pid31112.log
 #
 # If you would like to submit a bug report, please visit:
 #   http://bugreport.java.com/bugreport/crash.jsp
 #
-Current thread is 18748
+Current thread is 31119
 Dumping core ...

@@ -202,22 +202,25 @@ HeapWord* G1Allocator::par_allocate_during_gc(InCSetState dest,
 HeapWord* G1Allocator::survivor_attempt_allocation(size_t min_word_size,
                                                    size_t desired_word_size,
                                                    size_t* actual_word_size) {
+		HeapWord* obj0 = NULL; //cgmin
   assert(!_g1h->is_humongous(desired_word_size),
          "we should not be seeing humongous-size allocations in this path");
   HeapWord* result = survivor_gc_alloc_region()->attempt_allocation(min_word_size,
                                                                     desired_word_size,
-                                                                    actual_word_size);
+                                                                    actual_word_size,&obj0);
 
   if (result == NULL && !survivor_is_full()) {
     MutexLockerEx x(FreeList_lock, Mutex::_no_safepoint_check_flag);
     result = survivor_gc_alloc_region()->attempt_allocation_locked(min_word_size,
                                                                    desired_word_size,
-                                                                   actual_word_size);
+                                                                   actual_word_size,&obj0);
     if (result == NULL) {
       set_survivor_full();
     }
   }
   if (result != NULL) {
+			if (obj0 != NULL)
+					_g1h->dirty_young_block(obj0, pointer_delta(result,obj0));
     _g1h->dirty_young_block(result, *actual_word_size);
   }
   return result;

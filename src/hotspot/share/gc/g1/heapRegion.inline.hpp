@@ -38,7 +38,14 @@
 inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
                                                   size_t desired_word_size,
                                                   size_t* actual_size) {
-//		return par_allocate_impl(min_word_size,desired_word_size,actual_size);
+		HeapWord* temp;
+		return allocate_impl(min_word_size, desired_word_size, actual_size, &temp);
+}
+
+
+inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
+                                                  size_t desired_word_size,
+                                                  size_t* actual_size, HeapWord** obj0) {
   HeapWord* obj = top();
 	if (*actual_size != 2 && desired_word_size /*min_word_size*/ >= 512 /* && false*/) //cgmin alloc
 	{
@@ -58,6 +65,7 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
 			if (*actual_size  == 1) // cgmin bot	
 	    	_bot_part.alloc_block(obj, pd);
 			printf("allocate_impl obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+			*obj0 = obj;
 				obj = obj2;
 				//set_top(obj);
 			}
@@ -79,16 +87,29 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
     return NULL;
   }
 }
-
 inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
                                                       size_t desired_word_size,
                                                       size_t* actual_size) {
+		HeapWord* temp;
+		return par_allocate_impl(min_word_size, desired_word_size, actual_size,&temp);
+}
+
+inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
+                                                      size_t desired_word_size,
+                                                      size_t* actual_size,HeapWord** obj0) { //cgmin
+
+bool try_4k;
+		if (*actual_size != 2 && desired_word_size/*min_word_size*/ >= 512 /* && false*/ ) // cgmin par alloc
+				try_4k = true;
+		else
+				try_4k = false;
+
 
   do {
     HeapWord* obj = top();
 		HeapWord* obj2;
 		size_t _desired_word_size,_min_word_size,pd;
-		if (*actual_size != 2 && desired_word_size/*min_word_size*/ >= 512 /* && false*/ ) // cgmin par alloc
+		if (try_4k) // cgmin par alloc
 		{
 				obj2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(obj)-1)/4096+1)*4096);
 //				printf("ai2 %p %p\n",obj,obj2);
@@ -130,6 +151,7 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
 				{
 				CollectedHeap::fill_with_object(obj,pd);
 				printf("par_allocate_impl obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+				*obj0 = obj;
 				}
         return obj2; //
       }
@@ -138,12 +160,18 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
     }
   } while (true);
 }
-
 inline HeapWord* G1ContiguousSpace::allocate(size_t min_word_size,
                                              size_t desired_word_size,
                                              size_t* actual_size) {
+		HeapWord* temp;
+		return allocate(min_word_size,desired_word_size,actual_size,&temp);
+}
+
+inline HeapWord* G1ContiguousSpace::allocate(size_t min_word_size,
+                                             size_t desired_word_size,
+                                             size_t* actual_size,HeapWord** obj0) { //cgmin
 		*actual_size = 1; //cgmin 0828 bot
-  HeapWord* res = allocate_impl(min_word_size, desired_word_size, actual_size);
+  HeapWord* res = allocate_impl(min_word_size, desired_word_size, actual_size,obj0);
   if (res != NULL) {
 //				printf("%p %lu %lu %lu\n",res,min_word_size,desired_word_size,*actual_size);
 				/*
@@ -179,8 +207,14 @@ inline HeapWord* G1ContiguousSpace::par_allocate(size_t word_size) {
 inline HeapWord* G1ContiguousSpace::par_allocate(size_t min_word_size,
                                                  size_t desired_word_size,
                                                  size_t* actual_size) {
+		HeapWord** temp;
+		return par_allocate(min_word_size,desired_word_size,actual_size,&temp);
+}
+inline HeapWord* G1ContiguousSpace::par_allocate(size_t min_word_size,
+                                                 size_t desired_word_size,
+                                                 size_t* actual_size, HeapWord** obj0) { //cgmin
   MutexLocker x(&_par_alloc_lock);
-  return allocate(min_word_size, desired_word_size, actual_size);
+  return allocate(min_word_size, desired_word_size, actual_size,obj0);
 }
 
 inline HeapWord* G1ContiguousSpace::block_start(const void* p) {
@@ -301,21 +335,34 @@ inline void HeapRegion::apply_to_marked_objects(G1CMBitMap* bitmap, ApplyToMarke
 inline HeapWord* HeapRegion::par_allocate_no_bot_updates(size_t min_word_size,
                                                          size_t desired_word_size,
                                                          size_t* actual_word_size) {
+		HeapWord* temp;
+		return par_allocate_no_bot_updates(min_word_size,desired_word_size,actual_word_size,&temp);
+}
+
+inline HeapWord* HeapRegion::par_allocate_no_bot_updates(size_t min_word_size,
+                                                         size_t desired_word_size,
+                                                         size_t* actual_word_size, HeapWord** obj0) { //cgmin
   assert(is_young(), "we can only skip BOT updates on young regions");
-  return par_allocate_impl(min_word_size, desired_word_size, actual_word_size);
+  return par_allocate_impl(min_word_size, desired_word_size, actual_word_size,obj0);
 }
 
 inline HeapWord* HeapRegion::allocate_no_bot_updates(size_t word_size) {
   size_t temp;
   return allocate_no_bot_updates(word_size, word_size, &temp);
 }
-
 inline HeapWord* HeapRegion::allocate_no_bot_updates(size_t min_word_size,
                                                      size_t desired_word_size,
                                                      size_t* actual_word_size) {
+		HeapWord* temp;
+	return allocate_no_bot_updates(min_word_size,desired_word_size,actual_word_size,&temp);
+}
+
+inline HeapWord* HeapRegion::allocate_no_bot_updates(size_t min_word_size,
+                                                     size_t desired_word_size,
+                                                     size_t* actual_word_size, HeapWord** obj0) { //cgmin
   assert(is_young(), "we can only skip BOT updates on young regions");
 	*actual_word_size = 0; //cgmin bot
-  return allocate_impl(min_word_size, desired_word_size, actual_word_size);
+  return allocate_impl(min_word_size, desired_word_size, actual_word_size,obj0);
 }
 
 inline void HeapRegion::note_start_of_marking() {

@@ -408,8 +408,12 @@ G1CollectedHeap::mem_allocate(size_t word_size,
   size_t dummy = 0;
   return attempt_allocation(word_size, word_size, &dummy);
 }
-
 HeapWord* G1CollectedHeap::attempt_allocation_slow(size_t word_size) {
+		HeapWord* temp;
+		return attempt_allocation_slow(word_size,&temp);
+}
+
+HeapWord* G1CollectedHeap::attempt_allocation_slow(size_t word_size, HeapWord** obj0) {
   ResourceMark rm; // For retrieving the thread names in log messages.
 
   // Make sure you read the note in attempt_allocation_humongous().
@@ -433,7 +437,7 @@ HeapWord* G1CollectedHeap::attempt_allocation_slow(size_t word_size) {
 
     {
       MutexLockerEx x(Heap_lock);
-      result = _allocator->attempt_allocation_locked(word_size);
+      result = _allocator->attempt_allocation_locked(word_size,obj0);
       if (result != NULL) {
         return result;
       }
@@ -444,7 +448,7 @@ HeapWord* G1CollectedHeap::attempt_allocation_slow(size_t word_size) {
       if (GCLocker::is_active_and_needs_gc() && g1_policy()->can_expand_young_list()) {
         // No need for an ergo message here, can_expand_young_list() does this when
         // it returns true.
-        result = _allocator->attempt_allocation_force(word_size);
+        result = _allocator->attempt_allocation_force(word_size,obj0);
         if (result != NULL) {
           return result;
         }
@@ -736,8 +740,8 @@ inline HeapWord* G1CollectedHeap::attempt_allocation(size_t min_word_size,
   assert_heap_not_locked_and_not_at_safepoint();
   assert(!is_humongous(desired_word_size), "attempt_allocation() should not "
          "be called for humongous allocation requests");
-
-  HeapWord* result = _allocator->attempt_allocation(min_word_size, desired_word_size, actual_word_size);
+HeapWord* obj0 = NULL;
+  HeapWord* result = _allocator->attempt_allocation(min_word_size, desired_word_size, actual_word_size,&obj0);
 
   if (result == NULL) {
     *actual_word_size = desired_word_size;
@@ -747,6 +751,8 @@ inline HeapWord* G1CollectedHeap::attempt_allocation(size_t min_word_size,
   assert_heap_not_locked();
   if (result != NULL) {
     assert(*actual_word_size != 0, "Actual size must have been set here");
+		if (obj0 != NULL)
+				dirty_young_block(obj0, pointer_delta(result,obj0));
     dirty_young_block(result, *actual_word_size);
   } else {
     *actual_word_size = 0;
