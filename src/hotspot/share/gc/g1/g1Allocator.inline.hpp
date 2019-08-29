@@ -75,7 +75,7 @@ inline HeapWord* G1PLABAllocator::plab_allocate(InCSetState dest,
                                                 size_t word_sz) {
 
   PLAB* buffer = alloc_buffer(dest);
-	if (word_sz >= 512 && false) // cgmin PLAB 0827
+	if (word_sz >= 512/* && false*/) // cgmin PLAB 0827
 	{
 
 //printf("%d\n",(int)_survivor_alignment_bytes)
