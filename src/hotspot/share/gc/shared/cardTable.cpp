@@ -476,6 +476,8 @@ void CardTable::verify() {
 #ifndef PRODUCT
 void CardTable::verify_region(MemRegion mr,
                                       jbyte val, bool val_equals) {
+		//cgmin should  pass this in slowdebug
+		
   jbyte* start    = byte_for(mr.start());
   jbyte* end      = byte_for(mr.last());
   bool failures = false;
@@ -495,6 +497,7 @@ void CardTable::verify_region(MemRegion mr,
     }
   }
   guarantee(!failures, "there should not have been any failures");
+	
 }
 
 void CardTable::verify_not_dirty_region(MemRegion mr) {

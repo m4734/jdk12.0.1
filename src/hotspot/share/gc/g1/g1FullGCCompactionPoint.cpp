@@ -34,10 +34,22 @@ G1FullGCCompactionPoint::G1FullGCCompactionPoint() :
     _compaction_top(NULL) {
   _compaction_regions = new (ResourceObj::C_HEAP, mtGC) GrowableArray<HeapRegion*>(32, true, mtGC);
   _compaction_region_iterator = _compaction_regions->begin();
+
+	_obj_addr = new (ResourceObj::C_HEAP, mtGC) GrowableArray<HeapWord*>(32,true,mtGC); //cgmin
+	_obj_size = new (ResourceObj::C_HEAP, mtGC) GrowableArray<size_t>(32,true,mtGC); //cgmin
+
+//	_obj_addr = new GrowableArray<HeapWord*>(); //cgmin
+//	_obj_size = new GrowableArray<size_t>(); //cgmin
+	_obj_cnt = 0;
+
 }
 
 G1FullGCCompactionPoint::~G1FullGCCompactionPoint() {
   delete _compaction_regions;
+
+	//cgmin
+	delete _obj_addr;
+	delete _obj_size;
 }
 
 void G1FullGCCompactionPoint::update() {
@@ -107,17 +119,22 @@ void G1FullGCCompactionPoint::forward(oop object, size_t size) {
   // Store a forwarding pointer if the object should be moved.
   if ((HeapWord*)object != _compaction_top) {
 
-			if (false && size >= 512) //cgmin 0822
+			if (/*false && */size >= 512) //cgmin 0822
 			{
 //					HeapWord *obj = (HeapWord*)(((reinterpret_cast<uintptr_t>(res)-1)/4096+1)*4096);
 				HeapWord* ct2 = (HeapWord*)(((reinterpret_cast<uintptr_t>(_compaction_top)-1)/4096+1)*4096);
 				pd = pointer_delta(ct2,_compaction_top);
 				if (object_will_fit(size+pd) && pd >= CollectedHeap::min_fill_size())
 				{
-					CollectedHeap::fill_with_object(_compaction_top,pd);
+  _obj_addr->append(_compaction_top);
+	_obj_size->append(pd);
+	++_obj_cnt;
+
+//					CollectedHeap::fill_with_object(_compaction_top,pd);
 //					oop(_compaction_top)->forward_to(oop(_compaction_top));
-					oop(_compaction_top)->forward_to(NULL);
-				printf("forward ct %p ct2 %p pd %lu\n",_compaction_top,ct2,pd);
+//					oop(_compaction_top)->forward_to(NULL);
+//	  oop(_compaction_top)->init_mark_raw();
+			printf("forward ct %p ct2 %p pd %lu obj %p\n",_compaction_top,ct2,pd,(HeapWord*)object);
 					_compaction_top=ct2;
 				}
 				else
@@ -169,4 +186,17 @@ void G1FullGCCompactionPoint::merge(G1FullGCCompactionPoint* other) {
 
 HeapRegion* G1FullGCCompactionPoint::remove_last() {
   return _compaction_regions->pop();
+}
+
+void G1FullGCCompactionPoint::fill_obj() {
+	int i;
+	HeapWord* addr;
+	size_t size;
+	for (i=1;i<=_obj_cnt;++i)
+	{
+		addr = _obj_addr->pop();
+		size = _obj_size->pop();
+		CollectedHeap::fill_with_object(addr,size);
+
+	}
 }

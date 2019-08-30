@@ -117,7 +117,7 @@ void G1FullGCCompactTask::work(uint worker_id) {
        ++it) {
     compact_region(*it);
   }
-
+	collector()->compaction_point(worker_id)->fill_obj(); //cgmin
   G1ResetHumongousClosure hc(collector()->mark_bitmap());
   G1CollectedHeap::heap()->heap_region_par_iterate_from_worker_offset(&hc, &_claimer, worker_id);
   log_task("Compaction task", worker_id, start);

@@ -65,14 +65,12 @@ template <class T> inline void G1AdjustClosure::adjust_pointer(T* p) { //cgmin 0
   if (CompressedOops::is_null(heap_oop)) {
     return;
   }
-
   oop obj = CompressedOops::decode_not_null(heap_oop);
   assert(Universe::heap()->is_in(obj), "should be in heap");
   if (G1ArchiveAllocator::is_archived_object(obj)) {
     // We never forward archive objects.
     return;
   }
-
   oop forwardee = obj->forwardee();
   if (forwardee == NULL) {
     // Not forwarded, return current reference.
@@ -83,7 +81,6 @@ template <class T> inline void G1AdjustClosure::adjust_pointer(T* p) { //cgmin 0
            p2i(obj), p2i(obj->mark_raw()), p2i(markOopDesc::prototype_for_object(obj)));
     return;
   }
-
   // Forwarded, just update.
   assert(Universe::heap()->is_in_reserved(forwardee), "should be in object space");
   RawAccess<IS_NOT_NULL>::oop_store(p, forwardee);

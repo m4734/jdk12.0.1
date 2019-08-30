@@ -38,6 +38,11 @@ class G1FullGCCompactionPoint : public CHeapObj<mtGC> {
   GrowableArray<HeapRegion*>* _compaction_regions;
   GrowableArrayIterator<HeapRegion*> _compaction_region_iterator;
 
+	//cgmin
+	GrowableArray<HeapWord*>* _obj_addr;
+	GrowableArray<size_t>* _obj_size;
+	int _obj_cnt;
+
   bool object_will_fit(size_t size);
   void initialize_values(bool init_threshold);
   void switch_region();
@@ -59,6 +64,8 @@ public:
   HeapRegion* current_region();
 
   GrowableArray<HeapRegion*>* regions();
+
+	void fill_obj(); //cgmin
 };
 
 #endif // SHARE_GC_G1_G1FULLGCCOMPACTIONPOINT_HPP

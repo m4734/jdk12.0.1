@@ -164,29 +164,22 @@ void G1FullCollector::prepare_collection() {
   clear_and_activate_derived_pointers();
 }
 
-void G1FullCollector::collect() {
+void G1FullCollector::collect() { //cgmin check
 
-		printf("p0\n");
 
   phase1_mark_live_objects();
   verify_after_marking();
 
-	printf("p1\n");
 
   // Don't add any more derived pointers during later phases
   deactivate_derived_pointers();
 
   phase2_prepare_compaction();
 
-printf("p2\n");
-
   phase3_adjust_pointers();
-
-	printf("p3\n");
 
   phase4_do_compaction();
 
-	printf("p4\n");
 }
 
 void G1FullCollector::complete_collection() {
@@ -270,7 +263,7 @@ void G1FullCollector::phase4_do_compaction() {
   run_task(&task);
 
   // Serial compact to avoid OOM when very few free regions.
-  if (serial_compaction_point()->has_regions()) {
+  if (serial_compaction_point()->has_regions()) { //cgmin didn't modify
     task.serial_compaction();
   }
 }
