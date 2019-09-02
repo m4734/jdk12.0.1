@@ -134,7 +134,7 @@ void G1FullGCCompactionPoint::forward(oop object, size_t size) {
 //					oop(_compaction_top)->forward_to(oop(_compaction_top));
 //					oop(_compaction_top)->forward_to(NULL);
 //	  oop(_compaction_top)->init_mark_raw();
-			printf("forward ct %p ct2 %p pd %lu obj %p\n",_compaction_top,ct2,pd,(HeapWord*)object);
+//			printf("forward ct %p ct2 %p pd %lu obj %p\n",_compaction_top,ct2,pd,(HeapWord*)object); //cgmin print
 					_compaction_top=ct2;
 				}
 				else

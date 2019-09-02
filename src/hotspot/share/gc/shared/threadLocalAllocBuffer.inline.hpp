@@ -91,7 +91,7 @@ if (end() >= obj2 && pointer_delta(end(), obj2) >= size)
 						CollectedHeap::fill_with_object(obj,pd);
 				
 
-		printf("TLAB allocate obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+//		printf("TLAB allocate obj %p obj2 %p pd %lu\n",obj,obj2,pd); //cgmin print
 			obj  = obj2;
 		}
 //			printf("pd %lu\n",pd);

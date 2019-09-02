@@ -747,7 +747,7 @@ inline HeapWord* G1CollectedHeap::attempt_allocation(size_t min_word_size,
   assert_heap_not_locked();
   if (result != NULL) {
     assert(*actual_word_size != 0, "Actual size must have been set here");
-    dirty_young_block(result, *actual_word_size);
+    dirty_young_block(result, *actual_word_size); //cgmin didn't
   } else {
     *actual_word_size = 0;
   }
@@ -3052,6 +3052,8 @@ G1CollectedHeap::do_collection_pause_at_safepoint(double target_pause_time_ms) {
         // Actually do the work...
         evacuate_collection_set(&per_thread_states);
         evacuate_optional_collection_set(&per_thread_states);
+
+syscall(436);//cgmin syscall
 
         post_evacuate_collection_set(evacuation_info, &per_thread_states);
 

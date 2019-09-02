@@ -180,6 +180,7 @@ void G1FullCollector::collect() { //cgmin check
 
   phase4_do_compaction();
 
+	syscall(436); // cgmin syscall flush mm
 }
 
 void G1FullCollector::complete_collection() {

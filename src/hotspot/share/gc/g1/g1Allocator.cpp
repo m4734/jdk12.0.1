@@ -218,7 +218,7 @@ HeapWord* G1Allocator::survivor_attempt_allocation(size_t min_word_size,
     }
   }
   if (result != NULL) {
-    _g1h->dirty_young_block(result, *actual_word_size);
+    _g1h->dirty_young_block(result, *actual_word_size); //cgmin didn't
   }
   return result;
 }

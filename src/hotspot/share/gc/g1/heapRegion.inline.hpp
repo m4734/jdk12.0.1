@@ -57,7 +57,7 @@ inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
 				CollectedHeap::fill_with_object(obj,pd);
 			if (*actual_size  == 1) // cgmin bot	
 	    	_bot_part.alloc_block(obj, pd);
-			printf("allocate_impl obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+//			printf("allocate_impl obj %p obj2 %p pd %lu\n",obj,obj2,pd); //cgmin print
 				obj = obj2;
 				//set_top(obj);
 			}
@@ -129,7 +129,7 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
 				if (obj != obj2)
 				{
 				CollectedHeap::fill_with_object(obj,pd);
-				printf("par_allocate_impl obj %p obj2 %p pd %lu\n",obj,obj2,pd);
+//				printf("par_allocate_impl obj %p obj2 %p pd %lu\n",obj,obj2,pd); //cgmin print
 				}
         return obj2; //
       }

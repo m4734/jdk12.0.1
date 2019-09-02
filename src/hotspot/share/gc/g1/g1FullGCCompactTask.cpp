@@ -75,7 +75,7 @@ if (size >= 512)
 {
 //		printf("f-f\n");
 
-printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
+//printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
 ++cgmin_b2;
 b2_sum+=size;
 }
@@ -88,6 +88,15 @@ s2_sum+=size;
 //Ticks start = Ticks::now();
 struct timeval tv,tv2;
 gettimeofday(&tv,NULL);
+if (size >= 512 && false)
+{
+		size_t size2 = (size/512)*512;
+		syscall(434,obj_addr,destination,size2*8); //cgmin syscall
+//   Copy::aligned_conjoint_words(obj_addr, destination, size2);
+ Copy::aligned_conjoint_words(obj_addr+size2, destination+size2, size-size2);
+
+}
+		else
   Copy::aligned_conjoint_words(obj_addr, destination, size);
 gettimeofday(&tv2,NULL);
 //Tickspan time = Ticks::now()-start;
