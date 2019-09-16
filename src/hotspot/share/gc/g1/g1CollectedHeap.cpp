@@ -3050,11 +3050,19 @@ G1CollectedHeap::do_collection_pause_at_safepoint(double target_pause_time_ms) {
         pre_evacuate_collection_set();
 
         // Actually do the work...
+// printf("p-1\n");
         evacuate_collection_set(&per_thread_states);
+//				printf("p0\n");
+//syscall(436);//cgmin syscall
+//printf("ptf\n");
         evacuate_optional_collection_set(&per_thread_states);
-
+/*
+struct timeval tv,tv2;
+gettimeofday(&tv,NULL);
 syscall(436);//cgmin syscall
-
+gettimeofday(&tv2,NULL);
+printf("pt %lu\n",(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec);
+*/
         post_evacuate_collection_set(evacuation_info, &per_thread_states);
 
         const size_t* surviving_young_words = per_thread_states.surviving_young_words();
@@ -3757,7 +3765,7 @@ void G1CollectedHeap::evacuate_collection_set(G1ParScanThreadStateSet* per_threa
     // taken for the destructor is NOT included in the
     // reported parallel time.
   }
-
+//printf("-p0.5\n"); //cgmin test
   double par_time_ms = (end_par_time_sec - start_par_time_sec) * 1000.0;
   phase_times->record_par_time(par_time_ms);
 

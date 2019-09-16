@@ -177,10 +177,19 @@ void G1FullCollector::collect() { //cgmin check
   phase2_prepare_compaction();
 
   phase3_adjust_pointers();
-
-  phase4_do_compaction();
-
-	syscall(436); // cgmin syscall flush mm
+printf("f0\n");
+// 	syscall(436); //cgmin syscall flush mm
+ phase4_do_compaction();
+printf("f1\n");
+//	syscall(436); //cgmin syscall flush mm
+//	printf("ftf\n");
+/*
+struct timeval tv,tv2;
+gettimeofday(&tv,NULL);
+	syscall(436); //cgmin syscall flush mm
+gettimeofday(&tv2,NULL);
+printf("ft %lu\n",(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec);
+*/
 }
 
 void G1FullCollector::complete_collection() {

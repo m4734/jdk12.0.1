@@ -292,12 +292,19 @@ gettimeofday(&tv,NULL);
   const oop obj = oop(obj_ptr);
   const oop forward_ptr = old->forward_to_atomic(obj, old_mark, memory_order_relaxed);
   if (forward_ptr == NULL) {
-			if (word_sz >= 512 && false)
+			if (word_sz >= 512 && (unsigned long)old % 4096 == 0 && (unsigned long)obj_ptr%4096 == 0) // && false)
 			{
 					size_t size2 = (word_sz/512)*512;
-					syscall(434,old,obj_ptr,size2*8); //cgmin syscall
- //    Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, size2);
+   Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, 512);
+if (size2 > 512)
+{
+//	printf("part %p %p %d\n",(void*)old,(void*)obj_ptr,(int)word_sz); //cgmin
+				syscall(333,((HeapWord*)old)+512,obj_ptr+512,(size2-512)*8); //cgmin syscall
+//					syscall(436);
+}
+//     Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, size2);
    Copy::aligned_disjoint_words(((HeapWord*) old)+size2, obj_ptr+size2, word_sz-size2);
+//printf("part %p %p %d\n",(void*)old,(void*)obj_ptr,(int)word_sz); //cgmin
 
 			}
 			else

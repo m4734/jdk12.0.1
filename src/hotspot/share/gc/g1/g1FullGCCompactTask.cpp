@@ -84,26 +84,39 @@ else
 ++cgmin_s2;
 s2_sum+=size;
 }
+
+oop(obj_addr)->init_mark_raw();
+
 //printf("%d\n",(int)size);
 //Ticks start = Ticks::now();
 struct timeval tv,tv2;
 gettimeofday(&tv,NULL);
-if (size >= 512 && false)
+if (size >= 512 && (unsigned long)obj_addr % 4096 == 0 && (unsigned long)destination % 4096 == 0)// && false)
 {
 		size_t size2 = (size/512)*512;
-		syscall(434,obj_addr,destination,size2*8); //cgmin syscall
-//   Copy::aligned_conjoint_words(obj_addr, destination, size2);
+		Copy::aligned_conjoint_words(obj_addr, destination, 512);
+//		printf("%lu %lu\n",*((unsigned long*)obj_addr),*((unsigned long*)destination));
+		if (size2 > 512)
+		{
+			syscall(333,obj_addr+512,destination+512,(size2-512)*8); //cgmin syscall
+//   Copy::aligned_conjoint_words(obj_addr+512, destination+512, (size2-512));
+   }
  Copy::aligned_conjoint_words(obj_addr+size2, destination+size2, size-size2);
-
+//printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
+//syscall(436);
 }
 		else
+{
   Copy::aligned_conjoint_words(obj_addr, destination, size);
+//printf("full %p %p %lu\n",destination,oop(destination)->mark_addr_raw(),size); //cgmin
+
+}
 gettimeofday(&tv2,NULL);
 //Tickspan time = Ticks::now()-start;
 t2_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
 //t2_sum+=time.seconds();
-  oop(destination)->init_mark_raw();
-  assert(oop(destination)->klass() != NULL, "should have a class");
+//  oop(destination)->init_mark_raw();
+//  assert(oop(destination)->klass() != NULL, "should have a class");
 
   return size;
 }
@@ -126,6 +139,7 @@ void G1FullGCCompactTask::work(uint worker_id) {
        ++it) {
     compact_region(*it);
   }
+//	syscall(436); //cgmin test
 	collector()->compaction_point(worker_id)->fill_obj(); //cgmin
   G1ResetHumongousClosure hc(collector()->mark_bitmap());
   G1CollectedHeap::heap()->heap_region_par_iterate_from_worker_offset(&hc, &_claimer, worker_id);
