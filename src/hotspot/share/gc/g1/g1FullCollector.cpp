@@ -177,10 +177,8 @@ void G1FullCollector::collect() { //cgmin check
   phase2_prepare_compaction();
 
   phase3_adjust_pointers();
-printf("f0\n");
 // 	syscall(436); //cgmin syscall flush mm
  phase4_do_compaction();
-printf("f1\n");
 //	syscall(436); //cgmin syscall flush mm
 //	printf("ftf\n");
 /*

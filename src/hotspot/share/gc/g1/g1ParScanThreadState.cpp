@@ -285,16 +285,17 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   // We're going to allocate linearly, so might as well prefetch ahead.\
 
 //Ticks start = Ticks::now();
-struct timeval tv,tv2;
-gettimeofday(&tv,NULL);
+//struct timeval tv,tv2;
+//gettimeofday(&tv,NULL);
   Prefetch::write(obj_ptr, PrefetchCopyIntervalInBytes);
 
   const oop obj = oop(obj_ptr);
   const oop forward_ptr = old->forward_to_atomic(obj, old_mark, memory_order_relaxed);
   if (forward_ptr == NULL) {
-			if (word_sz >= 512 && (unsigned long)old % 4096 == 0 && (unsigned long)obj_ptr%4096 == 0) // && false)
+			if (word_sz >= 512 && (unsigned long)old % 4096 == 0 && (unsigned long)obj_ptr%4096 == 0)// && false)
 			{
 					size_t size2 = (word_sz/512)*512;
+					/*
    Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, 512);
 if (size2 > 512)
 {
@@ -303,17 +304,28 @@ if (size2 > 512)
 //					syscall(436);
 }
 //     Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, size2);
+//     */
+//struct timeval tv,tv2;
+//gettimeofday(&tv,NULL);
+      Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, 2);
+ 				syscall(333,((HeapWord*)old),obj_ptr,(size2)*8); //cgmin syscall 
    Copy::aligned_disjoint_words(((HeapWord*) old)+size2, obj_ptr+size2, word_sz-size2);
+//    Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz);
+
+//	 gettimeofday(&tv2,NULL);
+//	 printf("ppp %lu %lu\n",(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec,word_sz);
+
 //printf("part %p %p %d\n",(void*)old,(void*)obj_ptr,(int)word_sz); //cgmin
 
 			}
 			else
     Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz); //cgmin word sz?
-gettimeofday(&tv2,NULL);
-t_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
+//gettimeofday(&tv2,NULL);
+//t_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
 //Tickspan time = Ticks::now()-start;
 //t_sum+=time.seconds();
 //printf("part %p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
+/*
 if (word_sz >= 512)
 {
 ++cgmin_b;
@@ -327,6 +339,7 @@ else
 s_sum+=word_sz;
 //printf("%p %p %d\n",old,obj_ptr,(int)word_sz); //cgmin
 }
+*/
 //	printf("%d\n",(int)word_sz);
     if (dest_state.is_young()) {
       if (age < markOopDesc::max_age) {

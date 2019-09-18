@@ -71,6 +71,7 @@ size_t G1FullGCCompactTask::G1CompactRegionClosure::apply(oop obj) {
   HeapWord* obj_addr = (HeapWord*) obj;
   assert(obj_addr != destination, "everything in this pass should be moving");
 //printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
+/*
 if (size >= 512)
 {
 //		printf("f-f\n");
@@ -84,16 +85,17 @@ else
 ++cgmin_s2;
 s2_sum+=size;
 }
-
-oop(obj_addr)->init_mark_raw();
+*/
+//oop(obj_addr)->init_mark_raw();
 
 //printf("%d\n",(int)size);
 //Ticks start = Ticks::now();
-struct timeval tv,tv2;
-gettimeofday(&tv,NULL);
+//struct timeval tv,tv2;
+//gettimeofday(&tv,NULL);
 if (size >= 512 && (unsigned long)obj_addr % 4096 == 0 && (unsigned long)destination % 4096 == 0)// && false)
 {
 		size_t size2 = (size/512)*512;
+		/*
 		Copy::aligned_conjoint_words(obj_addr, destination, 512);
 //		printf("%lu %lu\n",*((unsigned long*)obj_addr),*((unsigned long*)destination));
 		if (size2 > 512)
@@ -101,7 +103,9 @@ if (size >= 512 && (unsigned long)obj_addr % 4096 == 0 && (unsigned long)destina
 			syscall(333,obj_addr+512,destination+512,(size2-512)*8); //cgmin syscall
 //   Copy::aligned_conjoint_words(obj_addr+512, destination+512, (size2-512));
    }
- Copy::aligned_conjoint_words(obj_addr+size2, destination+size2, size-size2);
+	 */
+ 			syscall(333,obj_addr,destination,size2*8); //cgmin syscall
+Copy::aligned_conjoint_words(obj_addr+size2, destination+size2, size-size2);
 //printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
 //syscall(436);
 }
@@ -111,12 +115,12 @@ if (size >= 512 && (unsigned long)obj_addr % 4096 == 0 && (unsigned long)destina
 //printf("full %p %p %lu\n",destination,oop(destination)->mark_addr_raw(),size); //cgmin
 
 }
-gettimeofday(&tv2,NULL);
+//gettimeofday(&tv2,NULL);
 //Tickspan time = Ticks::now()-start;
-t2_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
+//t2_sum+=(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec;
 //t2_sum+=time.seconds();
-//  oop(destination)->init_mark_raw();
-//  assert(oop(destination)->klass() != NULL, "should have a class");
+  oop(destination)->init_mark_raw();
+  assert(oop(destination)->klass() != NULL, "should have a class");
 
   return size;
 }

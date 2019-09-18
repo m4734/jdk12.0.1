@@ -42,7 +42,6 @@ G1FullGCScope::G1FullGCScope(G1MonitoringSupport* monitoring_support, bool expli
   _tracer.report_gc_start(_g1h->gc_cause(), _timer.gc_start());
   _g1h->pre_full_gc_dump(&_timer);
   _g1h->trace_heap_before_gc(&_tracer);
-printf("start\n");//cgmin
 }
 
 G1FullGCScope::~G1FullGCScope() {
@@ -55,7 +54,6 @@ G1FullGCScope::~G1FullGCScope() {
   _g1h->post_full_gc_dump(&_timer);
   _timer.register_gc_end();
   _tracer.report_gc_end(_timer.gc_end(), _timer.time_partitions());
-printf("end\n");//cgmin
 }
 
 bool G1FullGCScope::is_explicit_gc() {
