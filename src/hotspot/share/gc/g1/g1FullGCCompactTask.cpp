@@ -94,6 +94,8 @@ s2_sum+=size;
 //gettimeofday(&tv,NULL);
 if (size >= 512 && (unsigned long)obj_addr % 4096 == 0 && (unsigned long)destination % 4096 == 0)// && false)
 {
+//		struct timeval tv,tv2;
+//		gettimeofday(&tv,NULL);
 		size_t size2 = (size/512)*512;
 		/*
 		Copy::aligned_conjoint_words(obj_addr, destination, 512);
@@ -104,8 +106,11 @@ if (size >= 512 && (unsigned long)obj_addr % 4096 == 0 && (unsigned long)destina
 //   Copy::aligned_conjoint_words(obj_addr+512, destination+512, (size2-512));
    }
 	 */
+//  Copy::aligned_conjoint_words(obj_addr, destination, size);
  			syscall(333,obj_addr,destination,size2*8); //cgmin syscall
 Copy::aligned_conjoint_words(obj_addr+size2, destination+size2, size-size2);
+//gettimeofday(&tv2,NULL);
+//printf("full %lu %lu\n",size,(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec);
 //printf("full %p %p %lu\n",obj_addr,destination,size); //cgmin
 //syscall(436);
 }

@@ -308,12 +308,12 @@ if (size2 > 512)
 //struct timeval tv,tv2;
 //gettimeofday(&tv,NULL);
       Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, 2);
+//    Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz);
  				syscall(333,((HeapWord*)old),obj_ptr,(size2)*8); //cgmin syscall 
    Copy::aligned_disjoint_words(((HeapWord*) old)+size2, obj_ptr+size2, word_sz-size2);
-//    Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz);
 
 //	 gettimeofday(&tv2,NULL);
-//	 printf("ppp %lu %lu\n",(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec,word_sz);
+//	 printf("ppp %lu %lu\n",word_sz,(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec);
 
 //printf("part %p %p %d\n",(void*)old,(void*)obj_ptr,(int)word_sz); //cgmin
 
