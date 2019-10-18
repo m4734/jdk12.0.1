@@ -311,7 +311,7 @@ HeapWord* G1PLABAllocator::allocate_direct_or_new_plab(InCSetState dest,
     if (buf != NULL) {
       alloc_buf->set_buf(buf, actual_plab_size);
 
-      HeapWord* const obj = alloc_buf->allocate(word_sz);
+      HeapWord* const obj = alloc_buf->allocate(word_sz); // cgmin why didn't ?
       assert(obj != NULL, "PLAB should have been big enough, tried to allocate "
                           SIZE_FORMAT " requiring " SIZE_FORMAT " PLAB size " SIZE_FORMAT,
                           word_sz, required_in_plab, plab_word_size);

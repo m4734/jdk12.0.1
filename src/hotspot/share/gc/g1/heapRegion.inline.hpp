@@ -142,7 +142,7 @@ inline HeapWord* G1ContiguousSpace::par_allocate_impl(size_t min_word_size,
 inline HeapWord* G1ContiguousSpace::allocate(size_t min_word_size,
                                              size_t desired_word_size,
                                              size_t* actual_size) {
-		*actual_size = 1; //cgmin 0828 bot
+		*actual_size = 1; //cgmin bot
   HeapWord* res = allocate_impl(min_word_size, desired_word_size, actual_size);
   if (res != NULL) {
 //				printf("%p %lu %lu %lu\n",res,min_word_size,desired_word_size,*actual_size);

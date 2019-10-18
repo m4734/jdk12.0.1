@@ -285,8 +285,8 @@ oop G1ParScanThreadState::copy_to_survivor_space(InCSetState const state,
   // We're going to allocate linearly, so might as well prefetch ahead.\
 
 //Ticks start = Ticks::now();
-//struct timeval tv,tv2;
-//gettimeofday(&tv,NULL);
+struct timeval tv,tv2;
+gettimeofday(&tv,NULL);
   Prefetch::write(obj_ptr, PrefetchCopyIntervalInBytes);
 
   const oop obj = oop(obj_ptr);
@@ -306,14 +306,14 @@ if (size2 > 512)
 //     Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, size2);
 //     */
 //struct timeval tv,tv2;
-//gettimeofday(&tv,NULL);
+gettimeofday(&tv,NULL);
       Copy::aligned_disjoint_words(((HeapWord*) old), obj_ptr, 2);
 //    Copy::aligned_disjoint_words((HeapWord*) old, obj_ptr, word_sz);
  				syscall(333,((HeapWord*)old),obj_ptr,(size2)*8); //cgmin syscall 
    Copy::aligned_disjoint_words(((HeapWord*) old)+size2, obj_ptr+size2, word_sz-size2);
 
-//	 gettimeofday(&tv2,NULL);
-//	 printf("ppp %lu %lu\n",word_sz,(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec);
+	 gettimeofday(&tv2,NULL);
+	 printf("ppp %lu %lu\n",word_sz,(tv2.tv_sec-tv.tv_sec)*1000000+tv2.tv_usec-tv.tv_usec);
 
 //printf("part %p %p %d\n",(void*)old,(void*)obj_ptr,(int)word_sz); //cgmin
 
