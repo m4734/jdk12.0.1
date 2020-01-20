@@ -171,6 +171,8 @@ void G1FullCollector::collect() {
   // Don't add any more derived pointers during later phases
   deactivate_derived_pointers();
 
+  mark_group(); //cgmin
+
   phase2_prepare_compaction();
 
   phase3_adjust_pointers();
@@ -198,6 +200,27 @@ void G1FullCollector::complete_collection() {
   _heap->verify_after_full_collection();
 
   _heap->print_heap_after_full_collection(scope()->heap_transition());
+}
+
+//cgmin
+void G1FullCollector::mark_group()
+{
+  printf("cgmin start mark_group\n");
+  G1FullGCMarkGroupTask task(this);
+  run_task(&task);
+  printf("cgmin end mark_group\n");
+}
+
+void G1FullCollector::prepare_group()
+{
+}
+
+void G1FullCollector::adjust_group()
+{
+}
+
+void G1FullCollector::copy_group()
+{
 }
 
 void G1FullCollector::phase1_mark_live_objects() {

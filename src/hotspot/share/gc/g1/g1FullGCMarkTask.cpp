@@ -68,3 +68,50 @@ void G1FullGCMarkTask::work(uint worker_id) {
   assert(marker->objarray_stack()->is_empty(), "Array marking should have completed");
   log_task("Marking task", worker_id, start);
 }
+
+
+//cgmin
+G1FullGCMarkGroupTask::G1FullGCMarkGroupTask(G1FullCollector* collector) :
+    G1FullGCTask("cgmin G1 Group Marking Task", collector),
+    _hrclaimer(collector->workers()) {
+}
+
+
+void G1FullGCMarkGroupTask::work(uint worker_id) {
+
+  G1FindGroupClosure closure(collector()->mark_bitmap());
+  G1CollectedHeap::heap()->heap_region_par_iterate_from_start(&closure,&_hrclaimer);
+
+}
+
+G1FullGCMarkGroupTask::G1FindGroupClosure::G1FindGroupClosure(G1CMBitMap* bitmap) :
+//    _g1h(G1CollectedHeap::heap()),
+    _bitmap(bitmap) {}
+
+bool G1FullGCMarkGroupTask::G1FindGroupClosure::do_heap_region(HeapRegion *hr) {
+  if (hr->is_humongous()) {
+//???
+  }
+  else if (hr->is_pinned())
+  {
+//???
+  }
+  else
+  {
+    hr->find_group(_bitmap);
+    /*
+    HeapWord* limit = hr->scan_limit();
+    HeapWord* next_addr = hr->bottom();
+    HeapWord* zero;
+    if (!_bitmap->is_marked(next_addr))
+      next_addr = _bitmap->get_next_marked_addr(next_addr, limit);
+    while (next_addr < limit) {
+      zero = _bitmap->get_next_unmarked_addr(next_addr, limit);
+      printf("%lu\n",pointer_delta(zero,next_addr));//next_addr-zero);
+      next_addr = _bitmap->get_next_marked_addr(zero,limit);
+    }
+    */
+  }
+  return false;
+}
+

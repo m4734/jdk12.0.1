@@ -83,6 +83,9 @@ public:
   inline HeapWord* get_next_marked_addr(const HeapWord* addr,
                                         const HeapWord* limit) const;
 
+  inline HeapWord* get_next_unmarked_addr(const HeapWord* addr, const HeapWord* limit) const; //cgmin
+
+
   void print_on_error(outputStream* st, const char* prefix) const;
 
   // Write marks.

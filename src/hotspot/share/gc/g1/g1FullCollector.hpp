@@ -100,6 +100,13 @@ private:
   void verify_after_marking();
 
   void run_task(AbstractGangTask* task);
+
+//cgmin
+  void mark_group();
+  void prepare_group();
+  void adjust_group();
+  void copy_group();
+
 };
 
 

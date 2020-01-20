@@ -221,6 +221,22 @@ inline void HeapRegion::apply_to_marked_objects(G1CMBitMap* bitmap, ApplyToMarke
   assert(next_addr == limit, "Should stop the scan at the limit.");
 }
 
+inline void HeapRegion::find_group(G1CMBitMap* bitmap) //cgmin
+{
+  HeapWord* limit = scan_limit();
+  HeapWord* next_addr = bottom();
+  HeapWord* start;
+  if (!bitmap->is_marked(next_addr))
+    next_addr = bitmap->get_next_marked_addr(next_addr, limit);
+  while (next_addr < limit) {
+    start = next_addr;
+    while(next_addr < limit && bitmap->is_marked(next_addr))
+      next_addr += oop(next_addr)->size();
+    printf("%lu\n",pointer_delta(next_addr,start));//next_addr-zero);
+    next_addr = bitmap->get_next_marked_addr(next_addr,limit);
+  }
+}
+
 inline HeapWord* HeapRegion::par_allocate_no_bot_updates(size_t min_word_size,
                                                          size_t desired_word_size,
                                                          size_t* actual_word_size) {

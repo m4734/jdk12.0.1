@@ -43,4 +43,26 @@ public:
   void work(uint worker_id);
 };
 
+//cgmin
+class G1FullGCMarkGroupTask : public G1FullGCTask {
+
+  HeapRegionClaimer _hrclaimer;
+
+public:
+  G1FullGCMarkGroupTask(G1FullCollector* collector);
+  void work(uint worker_id);
+
+  class G1FindGroupClosure : public HeapRegionClosure {
+
+//  G1CollectedHeap* _g1h;
+  G1CMBitMap* _bitmap;
+
+  public:
+    G1FindGroupClosure(G1CMBitMap* bitmap);
+
+    bool do_heap_region(HeapRegion* hr);
+  };
+
+};
+
 #endif // SHARE_GC_G1_G1FULLGCMARKTASK_HPP

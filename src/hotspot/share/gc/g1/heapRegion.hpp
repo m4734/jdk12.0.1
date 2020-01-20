@@ -356,6 +356,11 @@ class HeapRegion: public G1ContiguousSpace {
   // objects to call size_t ApplyToMarkedClosure::apply(oop) for.
   template<typename ApplyToMarkedClosure>
   inline void apply_to_marked_objects(G1CMBitMap* bitmap, ApplyToMarkedClosure* closure);
+
+  //cgmin
+  inline void find_group(G1CMBitMap* bitmap);
+
+
   // Override for scan_and_forward support.
   void prepare_for_compaction(CompactPoint* cp);
   // Update heap region to be consistent after compaction.
@@ -698,6 +703,7 @@ class HeapRegion: public G1ContiguousSpace {
 
   void verify_rem_set(VerifyOption vo, bool *failures) const;
   void verify_rem_set() const;
+
 };
 
 // HeapRegionClosure is used for iterating over regions.
