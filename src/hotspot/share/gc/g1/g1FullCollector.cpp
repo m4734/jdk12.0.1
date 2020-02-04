@@ -171,7 +171,7 @@ void G1FullCollector::collect() {
   // Don't add any more derived pointers during later phases
   deactivate_derived_pointers();
 
-  mark_group(); //cgmin
+//  mark_group(); //cgmin
 
   phase2_prepare_compaction();
 

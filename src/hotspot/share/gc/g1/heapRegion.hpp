@@ -359,7 +359,7 @@ class HeapRegion: public G1ContiguousSpace {
 
   //cgmin
   inline void find_group(G1CMBitMap* bitmap);
-
+  int smallCnt,smallSize,bigCnt,bigSize;
 
   // Override for scan_and_forward support.
   void prepare_for_compaction(CompactPoint* cp);

@@ -226,15 +226,31 @@ inline void HeapRegion::find_group(G1CMBitMap* bitmap) //cgmin
   HeapWord* limit = scan_limit();
   HeapWord* next_addr = bottom();
   HeapWord* start;
+  int size;
+
+  bigCnt = smallCnt = bigSize = smallSize = 0;
+
   if (!bitmap->is_marked(next_addr))
     next_addr = bitmap->get_next_marked_addr(next_addr, limit);
   while (next_addr < limit) {
     start = next_addr;
     while(next_addr < limit && bitmap->is_marked(next_addr))
       next_addr += oop(next_addr)->size();
-    printf("%lu\n",pointer_delta(next_addr,start));//next_addr-zero);
+//    printf("%lu\n",pointer_delta(next_addr,start));//next_addr-zero);
+    size = int(pointer_delta(next_addr,start));
+    if (size >= 512)
+    {
+      ++bigCnt;
+      bigSize+=size;
+    }
+    else
+    {
+      ++smallCnt;
+      smallSize+=size;
+    }
     next_addr = bitmap->get_next_marked_addr(next_addr,limit);
   }
+  printf("bc %d sc %d bs %d ss %d\n",bigCnt,smallCnt,bigSize,smallSize);
 }
 
 inline HeapWord* HeapRegion::par_allocate_no_bot_updates(size_t min_word_size,

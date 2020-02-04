@@ -79,6 +79,7 @@ public:
   inline bool iterate(G1CMBitMapClosure* cl, MemRegion mr);
 
   void clear_region(HeapRegion* hr);
+
 };
 
 #endif // SHARE_VM_GC_G1_G1CONCURRENTMARKBITMAP_HPP
