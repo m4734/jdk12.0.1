@@ -53,6 +53,7 @@ public:
 class G1AdjustRegionClosure : public HeapRegionClosure {
   G1CMBitMap* _bitmap;
   uint _worker_id;
+
  public:
   G1AdjustRegionClosure(G1CMBitMap* bitmap, uint worker_id) :
     _bitmap(bitmap),

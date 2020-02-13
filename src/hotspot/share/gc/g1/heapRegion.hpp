@@ -63,6 +63,7 @@ class HeapRegionRemSetIterator;
 class HeapRegion;
 class HeapRegionSetBase;
 class nmethod;
+struct COG; //cgmin
 
 #define HR_FORMAT "%u:(%s)[" PTR_FORMAT "," PTR_FORMAT "," PTR_FORMAT "]"
 #define HR_FORMAT_PARAMS(_hr_) \
@@ -704,7 +705,20 @@ class HeapRegion: public G1ContiguousSpace {
   void verify_rem_set(VerifyOption vo, bool *failures) const;
   void verify_rem_set() const;
 
+  GrowableArray<COG>* _COG_Array; //cgmin
+  int _cog_cache_i;
+
 };
+
+  //cgmin
+  struct COG //continous object group
+  {
+    oop start;
+    oop end;
+    unsigned long pd;
+    unsigned long nd;
+  };
+
 
 // HeapRegionClosure is used for iterating over regions.
 // Terminates the iteration when the "do_heap_region" method returns "true".

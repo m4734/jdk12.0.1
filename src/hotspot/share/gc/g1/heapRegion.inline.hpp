@@ -226,31 +226,75 @@ inline void HeapRegion::find_group(G1CMBitMap* bitmap) //cgmin
   HeapWord* limit = scan_limit();
   HeapWord* next_addr = bottom();
   HeapWord* start;
-  int size;
+  oop next_forward;
+  int size,length;
+  COG cog;
 
   bigCnt = smallCnt = bigSize = smallSize = 0;
+  _COG_Array->clear();
+  _cog_cache_i = -1;
 
   if (!bitmap->is_marked(next_addr))
     next_addr = bitmap->get_next_marked_addr(next_addr, limit);
   while (next_addr < limit) {
     start = next_addr;
-    while(next_addr < limit && bitmap->is_marked(next_addr))
-      next_addr += oop(next_addr)->size();
+    next_forward = oop(next_addr)->forwardee();
+    while(next_addr < limit && bitmap->is_marked(next_addr) && next_forward == oop(next_addr)->forwardee())
+    {
+      size = oop(next_addr)->size();
+      next_addr += size;
+      next_forward = oop((HeapWord*)next_forward+size);
+    }
 //    printf("%lu\n",pointer_delta(next_addr,start));//next_addr-zero);
-    size = int(pointer_delta(next_addr,start));
-    if (size >= 512)
+    length = int(pointer_delta(next_addr,start));
+    if (length >= 512)
     {
       ++bigCnt;
-      bigSize+=size;
+      bigSize+=length;
+
+      cog.start = oop(start);
+      cog.end = oop(next_addr);
+      oop forwardee = oop(start)->forwardee();
+      if (forwardee == NULL)
+      {
+        cog.pd = 0;
+        cog.nd = 0;
+        }
+        else
+        {
+          if (oop(start) > forwardee)
+          {
+ //           cog.nd = CompressedOops::encode_not_null((oop)start) - CompressedOops::encode_not_null(forwardee);
+            cog.nd = start-(HeapWord*)forwardee;
+            cog.pd = 0;
+          }
+          else
+          {
+          cog.nd = 0;
+//        cog.pd = CompressedOops::encode_not_null(forwardee) - CompressedOops::encode_not_null((oop)start);
+          cog.pd = (HeapWord*)forwardee-start;
+        }
+
+//          cog.diff = (long int)start-(long int)forwardee;
+//printf("cog diff %lu %lu %p %p %p\n",cog.pd,cog.nd,start,next_addr,forwardee);
+}
+        _COG_Array->append(cog);
     }
     else
     {
       ++smallCnt;
-      smallSize+=size;
+      smallSize+=length;
     }
     next_addr = bitmap->get_next_marked_addr(next_addr,limit);
   }
+  /*
+  if (length == -1)
+  printf("-1\n");
+  */
+  /*
+  if (bigCnt + smallCnt > 0)
   printf("bc %d sc %d bs %d ss %d\n",bigCnt,smallCnt,bigSize,smallSize);
+  */
 }
 
 inline HeapWord* HeapRegion::par_allocate_no_bot_updates(size_t min_word_size,

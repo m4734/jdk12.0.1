@@ -245,6 +245,7 @@ HeapRegion::HeapRegion(uint hrm_index,
     _surv_rate_group(NULL), _age_index(-1),
     _prev_top_at_mark_start(NULL), _next_top_at_mark_start(NULL),
     _recorded_rs_length(0), _predicted_elapsed_time_ms(0)
+    , _COG_Array(new (ResourceObj::C_HEAP, mtGC) GrowableArray<COG>(8,true,mtGC)),_cog_cache_i(-1) //cgmin
 {
   _rem_set = new HeapRegionRemSet(bot, this);
 

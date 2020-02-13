@@ -177,20 +177,26 @@ void G1FullCollector::collect() {
   // Don't add any more derived pointers during later phases
   deactivate_derived_pointers();
 
+//clock_gettime(CLOCK_MONOTONIC,&ts5);
+
 //  mark_group(); //cgmin
+  clock_gettime(CLOCK_MONOTONIC,&ts1);
 
   phase2_prepare_compaction();
-  clock_gettime(CLOCK_MONOTONIC,&ts0);
+  clock_gettime(CLOCK_MONOTONIC,&ts2);
+mark_group();//cgmin
+clock_gettime(CLOCK_MONOTONIC,&ts5);
 
   phase3_adjust_pointers();
-  clock_gettime(CLOCK_MONOTONIC,&ts0);
+  clock_gettime(CLOCK_MONOTONIC,&ts3);
 
   phase4_do_compaction();
-  clock_gettime(CLOCK_MONOTONIC,&ts0);
+  clock_gettime(CLOCK_MONOTONIC,&ts4);
 
   printf("1 %ld\n",(ts1.tv_sec-ts0.tv_sec)*1000000000+ts1.tv_nsec-ts0.tv_nsec);
   printf("2 %ld\n",(ts2.tv_sec-ts1.tv_sec)*1000000000+ts2.tv_nsec-ts1.tv_nsec);
-  printf("3 %ld\n",(ts3.tv_sec-ts2.tv_sec)*1000000000+ts3.tv_nsec-ts2.tv_nsec);
+  printf("2.5 %ld\n",(ts5.tv_sec-ts2.tv_sec)*1000000000+ts5.tv_nsec-ts2.tv_nsec);
+  printf("3 %ld\n",(ts3.tv_sec-ts5.tv_sec)*1000000000+ts3.tv_nsec-ts5.tv_nsec);
   printf("4 %ld\n",(ts4.tv_sec-ts3.tv_sec)*1000000000+ts4.tv_nsec-ts3.tv_nsec);
   printf("t %ld\n\n",(ts4.tv_sec-ts0.tv_sec)*1000000000+ts4.tv_nsec-ts0.tv_nsec);
 
