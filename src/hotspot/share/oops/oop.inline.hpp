@@ -401,7 +401,21 @@ oop oopDesc::forwardee_acquire() const {
   markOop m = OrderAccess::load_acquire(&_mark);
   return (oop) m->decode_pointer();
 }
+/*
+oop oopDesc::forwardee_map() const { //cgmin
+  HeapRegion* hr = G1CollectedHeap::heap()->hrm()->addr_to_reigion((HeapWord*)this);
+//  unsigned long *pnMap = hr->_pnMap;
+  int mapIndex = ((unsigned long)(HeapWord*)this - hr->_b4)/4096;
+  if (hr->_pnMap[mapIndex] == 0)
+    return NULL;
+  else if (hr->_pnMap[mapIndex] == 1)
+    return oop((HeapWord*)this + hr->_dvMap[mapIndex]);
+  else if (hr->_pnMap[mapIndex] == 2)
+    return oop((HeapWord*)this - hr->_dvMap[mapIndex]);
+  return NULL;
 
+}
+*/
 // The following method needs to be MT safe.
 uint oopDesc::age() const {
   assert(!is_forwarded(), "Attempt to read age from forwarded mark");

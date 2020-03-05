@@ -79,8 +79,13 @@ size_t G1FullGCCompactTask::G1CompactRegionClosure::apply(oop obj) {
 
 void G1FullGCCompactTask::compact_region(HeapRegion* hr) {
   assert(!hr->is_humongous(), "Should be no humongous regions in compaction queue");
+  if (false) //cgmin compact on/off
+  {
   G1CompactRegionClosure compact(collector()->mark_bitmap());
   hr->apply_to_marked_objects(collector()->mark_bitmap(), &compact);
+  }
+  else
+    hr->compact_group(collector()->mark_bitmap());
   // Once all objects have been moved the liveness information
   // needs be cleared.
   collector()->mark_bitmap()->clear_region(hr);

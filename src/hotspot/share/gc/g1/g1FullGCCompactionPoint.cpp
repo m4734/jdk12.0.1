@@ -85,12 +85,24 @@ bool G1FullGCCompactionPoint::object_will_fit(size_t size) {
   return size <= space_left;
 }
 
+size_t G1FullGCCompactionPoint::space_left() {
+  return pointer_delta(_current_region->end(), _compaction_top);
+}
+
+HeapWord* G1FullGCCompactionPoint::top() {
+  return _compaction_top;
+}
+
 void G1FullGCCompactionPoint::switch_region() {
   // Save compaction top in the region.
   _current_region->set_compaction_top(_compaction_top);
   // Get the next region and re-initialize the values.
   _current_region = next_region();
   initialize_values(true);
+}
+
+void G1FullGCCompactionPoint::switch_region_public() { //cgmin
+  switch_region();
 }
 
 void G1FullGCCompactionPoint::forward(oop object, size_t size) {
@@ -130,6 +142,51 @@ void G1FullGCCompactionPoint::forward(oop object, size_t size) {
   if (_compaction_top > _threshold) {
     _threshold = _current_region->cross_threshold(_compaction_top - size, _compaction_top);
   }
+}
+
+void G1FullGCCompactionPoint::occupy(size_t size)
+{
+  assert(_current_region != NULL, "Must have been initialized");
+
+  // Ensure the object fit in the current region.
+  /*
+  while (!object_will_fit(size)) {
+  printf("cp error\n");
+    switch_region();
+  }
+  */
+/*
+  // Store a forwarding pointer if the object should be moved.
+  if ((HeapWord*)object != _compaction_top) {
+    object->forward_to(oop(_compaction_top));
+  } else {
+    if (object->forwardee() != NULL) {
+      // Object should not move but mark-word is used so it looks like the
+      // object is forwarded. Need to clear the mark and it's no problem
+      // since it will be restored by preserved marks. There is an exception
+      // with BiasedLocking, in this case forwardee() will return NULL
+      // even if the mark-word is used. This is no problem since
+      // forwardee() will return NULL in the compaction phase as well.
+      object->init_mark_raw();
+    } else {
+      // Make sure object has the correct mark-word set or that it will be
+      // fixed when restoring the preserved marks.
+      assert(object->mark_raw() == markOopDesc::prototype_for_object(object) || // Correct mark
+             object->mark_raw()->must_be_preserved(object) || // Will be restored by PreservedMarksSet
+             (UseBiasedLocking && object->has_bias_pattern_raw()), // Will be restored by BiasedLocking
+             "should have correct prototype obj: " PTR_FORMAT " mark: " PTR_FORMAT " prototype: " PTR_FORMAT,
+             p2i(object), p2i(object->mark_raw()), p2i(markOopDesc::prototype_for_object(object)));
+    }
+    assert(object->forwardee() == NULL, "should be forwarded to NULL");
+  }
+*/
+  // Update compaction values.
+  _compaction_top += size;
+  if (_compaction_top > _threshold) {
+    _threshold = _current_region->cross_threshold(_compaction_top - size, _compaction_top);
+  }
+
+
 }
 
 void G1FullGCCompactionPoint::add(HeapRegion* hr) {

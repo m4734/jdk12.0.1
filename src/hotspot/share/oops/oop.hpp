@@ -278,6 +278,8 @@ class oopDesc {
   inline oop forwardee() const;
   inline oop forwardee_acquire() const;
 
+//  inline oop forwardee_map() const; //cgmin
+
   // Age of object during scavenge
   inline uint age() const;
   inline void incr_age();

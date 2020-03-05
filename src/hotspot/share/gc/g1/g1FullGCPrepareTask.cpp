@@ -145,9 +145,17 @@ size_t G1FullGCPrepareTask::G1RePrepareClosure::apply(oop obj) {
 
 void G1FullGCPrepareTask::G1CalculatePointersClosure::prepare_for_compaction_work(G1FullGCCompactionPoint* cp,
                                                                                   HeapRegion* hr) {
+  if (false) //cgmin adjust? prepare group on/off
+  {
   G1PrepareCompactLiveClosure prepare_compact(cp);
   hr->set_compaction_top(hr->bottom());
   hr->apply_to_marked_objects(_bitmap, &prepare_compact);
+  }
+  else
+  {
+    hr->set_compaction_top(hr->bottom());
+    hr->prepare_group(_bitmap, cp);
+  }
 }
 
 void G1FullGCPrepareTask::G1CalculatePointersClosure::prepare_for_compaction(HeapRegion* hr) {

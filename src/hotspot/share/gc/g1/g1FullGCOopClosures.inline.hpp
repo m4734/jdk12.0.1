@@ -59,31 +59,7 @@ inline void G1MarkAndPushClosure::do_klass(Klass* k) {
 inline void G1MarkAndPushClosure::do_cld(ClassLoaderData* cld) {
   _marker->follow_cld(cld);
 }
-/*
-inline bool G1AdjustClosure::find_group(oop obj) //cgmin
-{
 
-  G1CollectedHeap* g1h = G1CollectedHeap::heap();
-
-  GrowableArray<COG>* cog_array = g1h->hrm()->addr_to_region((HeapWord*)(obj))->_COG_Array;
-
-  for (GrowableArrayIterator<COG> it = cog_array->begin(); it != cog_array->end(); ++it)
-  {
-    COG cog = *it;
-    if (cog.start <= obj && obj < cog.end)
-    {
-      _group_start_cache = cog.start;
-      _group_end_cache = cog.end;
-      _group_pd_cache = cog.pd;
-      _group_nd_cache = cog.nd;
-printf("find %p %p %p\n",cog.start,obj,cog.end);
-      return true;
-    }
-  }
-  printf("find fail %p\n",obj);
-  return false;
-}
-*/
 template <class T> inline void G1AdjustClosure::adjust_pointer(T* p) {
   T heap_oop = RawAccess<>::oop_load(p);
   if (CompressedOops::is_null(heap_oop)) {
@@ -96,7 +72,7 @@ template <class T> inline void G1AdjustClosure::adjust_pointer(T* p) {
     // We never forward archive objects.
     return;
   }
-  if (false)
+  if (true)
   {
 /*
   oop group_start=0;
@@ -104,66 +80,60 @@ template <class T> inline void G1AdjustClosure::adjust_pointer(T* p) {
   unsigned long group_pd;
   unsigned long group_nd;
 */
-  //cgmin
+  //cgmin adjust pointer modify
 //  G1CollectedHeap* g1h = G1CollectedHeap::heap();
   HeapRegion* hr = G1CollectedHeap::heap()->hrm()->addr_to_region((HeapWord*)(obj));
-  GrowableArray<COG>* cog_array = hr->_COG_Array;
-  COG cog;
-  cog.start = cog.end = 0;
-  if (hr->_cog_cache_i >= 0)
-    cog = cog_array->at(hr->_cog_cache_i);
-  if (cog.start > obj || obj >= cog.end)
+  unsigned long *pnMap = hr->_pnMap;
+//  unsigned long *ndMap = hr->_ndMap;
+  int mapIndex = ((unsigned long)(HeapWord*)obj - hr->_b4)/(4096);
+  if (pnMap[mapIndex] != 0)
   {
-  int i,len;
-  len = cog_array->length();
-  for (i = 0;i < len;i++)
-  {
-    cog = cog_array->at(i);
-    if (cog.start <= obj && obj < cog.end)
-    {
-      hr->_cog_cache_i = i;
-      break;
-    }
+    unsigned long *dvMap = hr->_dvMap;
+    if (pnMap[mapIndex] == 1)
+      RawAccess<IS_NOT_NULL>::oop_store(p, oop((HeapWord*)obj + dvMap[mapIndex]));
+    else if (pnMap[mapIndex] == 2)
+      RawAccess<IS_NOT_NULL>::oop_store(p, oop((HeapWord*)obj - dvMap[mapIndex]));
+    return;
   }
-//  printf("miss\n");
-  }
-//  else
-//  printf("hit\n");
-  if (cog.start <= obj && obj < cog.end) // OR
+  /*
+  if (pdMap[mapIndex] != 0)
   {
-  
-    if (cog.pd != 0 || cog.nd != 0)
-    {
-    /*
-      oop forwardee = oop((HeapWord*)obj + group_pd - group_nd);
+      RawAccess<IS_NOT_NULL>::oop_store(p, oop((HeapWord*)obj + pdMap[mapIndex]));
+      return;
+      }
+
+  if (ndMap[mapIndex] != 0) // OR
+  {
+    
+      oop forwardee = oop((HeapWord*)obj + pdMap[mapIndex] - ndMap[mapIndex]);
       if (forwardee != obj->forwardee())
       {
-        printf("%p != %p | %p %p %p %lu %lu\n", obj->forwardee(),oop((HeapWord*)obj + group_pd - group_nd),obj,group_start,group_end,group_pd,group_nd);
+        printf("%p != %p | %p %d %lu %lu\n", obj->forwardee(),forwardee,obj,mapIndex,pdMap[mapIndex],ndMap[mapIndex]);
         forwardee = obj->forwardee();
         }
       RawAccess<IS_NOT_NULL>::oop_store(p, forwardee);
-*/
-      RawAccess<IS_NOT_NULL>::oop_store(p, oop((HeapWord*)obj + cog.pd - cog.nd));
+
+      RawAccess<IS_NOT_NULL>::oop_store(p, oop((HeapWord*)obj - ndMap[mapIndex]));
 //  RawAccess<IS_NOT_NULL>::oop_store(p, obj->forwardee());
-}
 
     return;
     
-   /* 
+    
     if (obj->forwardee() != oop((HeapWord*)obj + group_pd - group_nd))
     {
       printf("%p != %p | %p %p %p %lu %lu\n", obj->forwardee(),oop((HeapWord*)obj + group_pd - group_nd),obj,group_start,group_end,group_pd,group_nd);
     }
-   */ 
-    /*
+    
+    
     printf("%p %p %lu %lu\n",group_start,group_end,group_pd,group_nd);
     if (oop(((HeapWord*)obj + group_pd) - group_nd) != obj->forwardee())
       printf("error %p + %ld = %p != %p\n",obj,(long int)group_pd-(long int)group_nd,(void*)(((HeapWord*)obj+group_pd)-group_nd),obj->forwardee());
       else
       printf("T %p okoko %p + %ld = %p != %p\n",p,obj,(long int)group_pd-(long int)group_nd,(void*)(((HeapWord*)obj+group_pd)-group_nd),obj->forwardee());
-*/
+
   }
-}
+  */
+} // false
   oop forwardee = obj->forwardee();
   if (forwardee == NULL) {
     // Not forwarded, return current reference.
@@ -176,6 +146,8 @@ template <class T> inline void G1AdjustClosure::adjust_pointer(T* p) {
   }
 
   // Forwarded, just update.
+//  if (Universe::heap()->is_in_reserved(forwardee) == false)
+//    printf("error %p %p\n",(HeapWord*)obj,(HeapWord*)forwardee);
   assert(Universe::heap()->is_in_reserved(forwardee), "should be in object space");
   RawAccess<IS_NOT_NULL>::oop_store(p, forwardee);
 }

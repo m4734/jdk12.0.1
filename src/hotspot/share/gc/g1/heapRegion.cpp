@@ -245,11 +245,30 @@ HeapRegion::HeapRegion(uint hrm_index,
     _surv_rate_group(NULL), _age_index(-1),
     _prev_top_at_mark_start(NULL), _next_top_at_mark_start(NULL),
     _recorded_rs_length(0), _predicted_elapsed_time_ms(0)
-    , _COG_Array(new (ResourceObj::C_HEAP, mtGC) GrowableArray<COG>(8,true,mtGC)),_cog_cache_i(-1) //cgmin
+    , _COG_Array(new (ResourceObj::C_HEAP, mtGC) GrowableArray<COG>(8,true,mtGC))//cgmin
+
 {
   _rem_set = new HeapRegionRemSet(bot, this);
 
   initialize(mr);
+
+  //cgmin
+//  printf("%p %p %ld\n",_bottom,_end,(unsigned long)(_end-_bottom));
+//  _ndMap = (unsigned long*)os::malloc((((unsigned long)_end-(unsigned long)_bottom%4096-1)/(4*1024)+1)*sizeof(unsigned long),mtInternal);
+  _b4 = (unsigned long)_bottom/4096*4096;
+  _mapMax = ((unsigned long)_end-_b4)/4096+1;
+
+  _pnMap = (unsigned long*)os::malloc(_mapMax*sizeof(unsigned long),mtInternal);
+  _dvMap = (unsigned long*)os::malloc(_mapMax*sizeof(unsigned long),mtInternal);
+
+  int i;
+  for (i=0;i<_mapMax;i++)
+    _pnMap[i] = 0;
+}
+HeapRegion::~HeapRegion() //cgmin
+{
+  os::free(_pnMap);
+  os::free(_dvMap);
 }
 
 void HeapRegion::initialize(MemRegion mr, bool clear_space, bool mangle_space) {

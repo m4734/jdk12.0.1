@@ -76,10 +76,8 @@ public:
 
 class G1AdjustClosure : public BasicOopIterateClosure {
 
-  template <class T> static inline void adjust_pointer(T* p); //cgmin
+  template <class T> static inline void adjust_pointer(T* p);
 public:
-  G1AdjustClosure()/* : _group_start_cache(0),_group_end_cache(0)*/
-  { }
 
   template <class T> void do_oop_work(T* p) { adjust_pointer(p); }
   virtual void do_oop(oop* p);
@@ -87,16 +85,6 @@ public:
 
   virtual ReferenceIterationMode reference_iteration_mode() { return DO_FIELDS; }
 
-  //cgmin
-  //__thread
-  /*
-  oop _group_start_cache;
-  oop _group_end_cache;
-  unsigned long _group_pd_cache; // CompressedOops
-  unsigned long _group_nd_cache;
-
-  inline bool find_group(oop obj); //cgmin
-*/
 };
 
 class G1VerifyOopClosure: public BasicOopIterateClosure {

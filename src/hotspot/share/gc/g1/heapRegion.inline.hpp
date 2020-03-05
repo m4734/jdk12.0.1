@@ -35,6 +35,8 @@
 #include "runtime/prefetch.inline.hpp"
 #include "utilities/align.hpp"
 
+#include "gc/g1/g1FullGCCompactionPoint.hpp" //cgmin
+
 inline HeapWord* G1ContiguousSpace::allocate_impl(size_t min_word_size,
                                                   size_t desired_word_size,
                                                   size_t* actual_size) {
@@ -227,12 +229,18 @@ inline void HeapRegion::find_group(G1CMBitMap* bitmap) //cgmin
   HeapWord* next_addr = bottom();
   HeapWord* start;
   oop next_forward;
-  int size,length;
+  int size,length,mapIndex,i;
   COG cog;
 
   bigCnt = smallCnt = bigSize = smallSize = 0;
   _COG_Array->clear();
-  _cog_cache_i = -1;
+
+  for (i=0;i<_mapMax;i++)
+  {
+    _pnMap[i] = 0;
+    _dvMap[i] = 0;
+  }
+
 
   if (!bitmap->is_marked(next_addr))
     next_addr = bitmap->get_next_marked_addr(next_addr, limit);
@@ -252,32 +260,45 @@ inline void HeapRegion::find_group(G1CMBitMap* bitmap) //cgmin
       ++bigCnt;
       bigSize+=length;
 
-      cog.start = oop(start);
-      cog.end = oop(next_addr);
-      oop forwardee = oop(start)->forwardee();
-      if (forwardee == NULL)
-      {
-        cog.pd = 0;
-        cog.nd = 0;
+      HeapWord* forwardee = (HeapWord*)(oop(start)->forwardee());
+
+      cog.start = start;
+      cog.length = length;
+      cog.forward = forwardee;
+
+      if (forwardee != NULL)
+        {
+        int startIndex,endIndex;
+        unsigned long value;
+        startIndex = ((unsigned long)start+4096)/4096*4096-_b4;
+        endIndex = ((unsigned long)next_addr)/4096*4096-_b4;
+          if (start > forwardee)
+          {
+          value = start - forwardee;
+          for (i=startIndex;i<endIndex;i++)
+          {
+            _dvMap[i] = value;
+            _pnMap[i] = 2;
+            }
+ //           cog.nd = CompressedOops::encode_not_null((oop)start) - CompressedOops::encode_not_null(forwardee);
+          }
+          else if (start < forwardee)
+          {
+          value = forwardee - start;
+          for (i=startIndex;i<endIndex;i++)
+          {
+            _dvMap[i] = value;
+            _pnMap[i] = 1;
+            }
+//        cog.pd = CompressedOops::encode_not_null(forwardee) - CompressedOops::encode_not_null((oop)start);
         }
         else
-        {
-          if (oop(start) > forwardee)
-          {
- //           cog.nd = CompressedOops::encode_not_null((oop)start) - CompressedOops::encode_not_null(forwardee);
-            cog.nd = start-(HeapWord*)forwardee;
-            cog.pd = 0;
-          }
-          else
-          {
-          cog.nd = 0;
-//        cog.pd = CompressedOops::encode_not_null(forwardee) - CompressedOops::encode_not_null((oop)start);
-          cog.pd = (HeapWord*)forwardee-start;
-        }
+          _pnMap[i] = 3;
 
 //          cog.diff = (long int)start-(long int)forwardee;
 //printf("cog diff %lu %lu %p %p %p\n",cog.pd,cog.nd,start,next_addr,forwardee);
 }
+
         _COG_Array->append(cog);
     }
     else
@@ -287,6 +308,7 @@ inline void HeapRegion::find_group(G1CMBitMap* bitmap) //cgmin
     }
     next_addr = bitmap->get_next_marked_addr(next_addr,limit);
   }
+
   /*
   if (length == -1)
   printf("-1\n");
@@ -296,6 +318,334 @@ inline void HeapRegion::find_group(G1CMBitMap* bitmap) //cgmin
   printf("bc %d sc %d bs %d ss %d\n",bigCnt,smallCnt,bigSize,smallSize);
   */
 }
+
+inline void HeapRegion::prepare_group(G1CMBitMap* bitmap, G1FullGCCompactionPoint* cp)
+{
+/*
+  cp->space_left();
+  cp->top();
+  cp->occupy(s);
+  */
+
+  // HeapWord* and unsigned long are different...
+
+  HeapWord* limit = scan_limit();
+  HeapWord* obj_addr = bottom();
+//  HeapWord* start_addr;
+//  HeapWord* next_addr;
+  HeapWord* top;
+  HeapWord* space_limit;
+  HeapWord* fail_addr;
+//  HeapWord* ttt;
+  size_t space_left,align_waste,size;
+  COG cog;
+  int i;
+  unsigned long diff;
+  /*
+  bool over; //overwrite -- impossible
+
+  if (cp->top() == bottom()) //???
+    over = true;
+    else
+    over = false;
+*/
+  _COG_Array->clear();
+
+  for (i=0;i<_mapMax;i++)
+  {
+    _pnMap[i] = 0;
+//    _ndMap[i] = 0;
+  }
+/*
+  while(obj_addr < limit)
+  {
+    if (bitmap->is_marked(obj_addr))
+    {
+      size = oop(obj_addr)->size();
+      cp->forward(oop(obj_addr),size);
+      obj_addr+=size;
+    }
+    else
+      obj_addr = bitmap->get_next_marked_addr(obj_addr,limit);
+  }
+  */
+  fail_addr = 0;
+  while (obj_addr < limit)
+  {
+//    size = oop(obj_addr)->size();
+//    next_addr = obj_addr + size;
+//    Prefetch::write(obj_addr, PrefetchScanIntervalInBytes);
+
+    if (bitmap->is_marked(obj_addr) == false)
+    {
+      obj_addr = bitmap->get_next_marked_addr(obj_addr,limit);
+      continue;
+    }
+    size = oop(obj_addr)->size();
+    if ((unsigned long)obj_addr / 4096 == (unsigned long)(obj_addr + size) / 4096 || obj_addr < fail_addr) // unsigend long?
+    {
+      cp->forward(oop(obj_addr),size);
+      obj_addr += size;
+    }
+    else
+    {
+      space_left = cp->space_left()*sizeof(HeapWord); //ws? -> unsigned long
+      top = cp->top();
+      align_waste = (4096+((unsigned long)obj_addr%4096)-(unsigned long)top%4096)%4096; //unsigned long?
+      if (/*top != obj_addr &&*/ space_left >= 4096 + align_waste && (align_waste == 0 || align_waste >= G1CollectedHeap::min_fill_size()*sizeof(HeapWord))/* && (over && (unsigned long)obj_addr < (unsigned long)top+ align_waste ) == false*/) // cgmin 512
+      {
+        cog.start = obj_addr;
+        cog.end = 0;
+//        start_addr = obj_addr;
+//        next_addr = obj_addr;
+        space_limit = (HeapWord*)((unsigned long)cog.start + space_left - align_waste);
+        while (obj_addr < limit) // HeapWord
+        {
+          size = oop(obj_addr)->size(); //word
+          if (obj_addr + size > space_limit) //word
+            break;
+          if ((unsigned long)(obj_addr + size) / 4096 != (unsigned long)obj_addr / 4096)
+          {
+            cog.end = obj_addr+size; //word
+//            ttt = obj_addr; //test
+            }
+//oop(obj_addr)->init_mark_raw(); // need?
+          obj_addr += size;
+
+          if (bitmap->is_marked(obj_addr) == false)
+            break;
+
+          /*
+          next_addr += size; //word
+          obj_addr = bitmap->get_next_marked_addr(obj_addr,limit);
+          if (next_addr != obj_addr)
+            break;
+            */
+        }
+        fail_addr = cog.end;
+        if (cog.end == 0 || (unsigned long)cog.end/4096 <= (unsigned long)cog.start/4096 +10) //length threshold - failed
+        {
+          obj_addr = cog.start;
+//          next_addr = bitmap->get_next_marked_addr(obj_addr,limit);
+          size = oop(obj_addr)->size();
+
+//          printf("fail %p %lu\n",obj_addr,size);
+
+          cp->forward(oop(obj_addr),size);
+//          obj_addr = next_addr;
+          obj_addr += size;
+        }
+        else //successed
+        {
+          int start_i,end_i;
+//          size_t ws = pointer_delta((top+4096)/4096*4096,top);
+/*
+          if (align_waste > 0)
+          {
+          G1CollectedHeap::fill_with_objects(top,align_waste/sizeof(HeapWord)); //ul -> word
+          printf("fill %lu\n",align_waste/sizeof(HeapWord));
+          }
+          */
+          
+          cog.align_waste = align_waste;
+
+          cog.length = (cog.end - cog.start)*sizeof(HeapWord); // word -> ul
+          cog.forward = (HeapWord*)((unsigned long)top + align_waste); // pointer->ul->pointer
+//          printf("success %p %p %lu %p %p\n",cog.start,cog.end,cog.length,cog.forward,ttt);
+          _COG_Array->append(cog);
+          obj_addr = cog.end;
+//          printf("cp %p ",top);
+          cp->occupy((align_waste+cog.length)/sizeof(HeapWord)); // ul->word
+//          printf("%p %lu %lu\n",cp->top(),align_waste,cog.length);
+/*
+obj_addr = cog.start;
+ttt = cog.forward; // forward test
+while(obj_addr < cog.end)
+{
+  if (bitmap->is_marked(obj_addr) == false)
+    printf("bitmap false\n");
+  oop(obj_addr)->forward_to(ttt);
+  ttt+=oop(obj_addr)->size();
+  obj_addr+=oop(obj_addr)->size();
+}
+obj_addr = cog.end;
+*/
+
+            start_i = ((unsigned long)cog.start + 4096 -1 - _b4)/4096; //pointer ->ul
+            end_i = ((unsigned long)cog.end - _b4 )/4096; //pointer -> ul
+
+          if (cog.start > cog.forward)
+          {
+            diff = cog.start - cog.forward;//pointer->ul word!
+            for (i = start_i; i < end_i;i++)
+            {
+              _pnMap[i] = 2;
+              _dvMap[i] = diff;
+              }
+          }
+          else if (cog.start < cog.forward)
+          {
+            diff = cog.forward - cog.start; //pointer->ul
+            for (i = start_i; i < end_i;i++)
+            {
+            _pnMap[i] = 1;
+             _dvMap[i] = diff;
+             }
+          }           
+          else
+          {
+            for (i=start_i; i< end_i;i++)
+            {
+              _pnMap[i] = 3;
+            }
+          }
+
+          if ((unsigned long)cog.start % 4096 != 0)
+          {
+          /*
+            if (cog.start == cog.forward)
+            {
+              if (oop(cog.start)->forwardee() != NULL)
+                oop(cog.start)->init_mark_raw();
+              }
+              else
+              */
+            oop(cog.start)->forward_to(oop(cog.forward));
+            }
+
+        }
+        
+      }
+      else
+      {
+//        size = oop(obj_addr)->size();
+       cp->forward(oop(obj_addr),size);
+//       obj_addr = next_addr;
+        obj_addr += size;
+
+      }
+//    oop(obj_addr)->forward_to(oop(_compaction_top));
+//    obj_addr = bitmap->get_next_marked_addr(obj_addr,limit);
+    }
+  }
+
+}
+inline void HeapRegion::compact_group(G1CMBitMap* bitmap) //cgmin
+{
+  HeapWord* limit = scan_limit();
+  HeapWord* obj_addr = bottom();
+  HeapWord* dst;
+  HeapWord* forward;
+  size_t size;
+  COG cog;
+  GrowableArrayIterator<COG> it;
+  if (_COG_Array->length()>0)
+  {
+  it = _COG_Array->begin();
+  cog = *it;
+  }
+  else
+    cog.start = 0;
+  while (obj_addr < limit) {
+
+    if (bitmap->is_marked(obj_addr) == false)
+    {
+      obj_addr = bitmap->get_next_marked_addr(obj_addr,limit);
+      continue;
+    }
+
+    if (obj_addr == cog.start)
+    {
+      if (cog.align_waste > 0)
+      {
+        G1CollectedHeap::fill_with_objects(cog.forward-cog.align_waste/sizeof(HeapWord),cog.align_waste/sizeof(HeapWord)); //ul -> word
+       
+      }
+
+// init test
+/*
+obj_addr = cog.start;
+while(obj_addr < cog.end)
+{
+  if (bitmap->is_marked(obj_addr) == false)
+    printf("bitmap false\n");
+  if (obj_addr != cog.start && oop(obj_addr)->mark_raw() != markOopDesc::prototype_for_object(oop(obj_addr)))
+    printf("mark raw %p %p %p\n",obj_addr,cog.start,cog.end);
+  oop(obj_addr)->init_mark_raw();
+  obj_addr+=oop(obj_addr)->size();
+}
+obj_addr = cog.start;
+*/
+      oop(cog.start)->init_mark_raw();
+
+      if (cog.start != cog.forward)
+      {
+      if (false) // syscall on off
+      {
+      Copy::aligned_conjoint_words(cog.start,cog.forward,cog.length/sizeof(HeapWord));
+      }
+      else
+      {
+      forward = cog.forward;
+      size = (HeapWord*)(((unsigned long)cog.start+4096-1)/4096*4096)-cog.start; //word
+      if (size > 0)
+      {
+//        oop(obj_addr)->init_mark_raw();
+        Copy::aligned_conjoint_words(cog.start,forward,size);
+
+      obj_addr+=size;
+      forward+=size;
+      }
+//      size = ((unsigned long)cog.end/4096-(unsigned long)cog.start/4096-1)*4096 / sizeof(HeapWord); // word size?
+
+      size = ((unsigned long)cog.end/4096*4096-((unsigned long)cog.start+4096-1)/4096*4096) / sizeof(HeapWord); // word size?
+
+//      Copy::aligned_conjoint_words(obj_addr,forward,size);
+      syscall(333,obj_addr,forward,size*sizeof(HeapWord)); //syscall
+      // all 335 local 336
+
+      obj_addr = (HeapWord*)((unsigned long)cog.end-(unsigned long)cog.end%4096);
+      forward+=size;
+      size = (unsigned long)cog.end%4096/sizeof(HeapWord); // ?? we may need OR
+      Copy::aligned_conjoint_words(obj_addr,forward,size);
+      }
+}
+/*
+      if (cog.align_waste > 0)
+      {
+        G1CollectedHeap::fill_with_objects(cog.forward-cog.align_waste/sizeof(HeapWord),cog.align_waste/sizeof(HeapWord)); //ul -> word
+       
+      }
+*/
+      obj_addr = cog.end;
+
+        ++it;
+
+      if (it == _COG_Array->end())
+        cog.start = 0;
+        else
+        cog = *it;
+//      obj_addr+=cog.length;
+//        obj_addr = bitmap->get_next_marked_addr(cog.end-1,limit); // ok?
+    }
+    else
+    {
+      size = oop(obj_addr)->size();
+      dst = (HeapWord*)oop(obj_addr)->forwardee();
+//      oop(obj_addr)->init_mark_raw();
+      if (dst != NULL && obj_addr != dst)
+      {
+      Copy::aligned_conjoint_words(obj_addr, dst, size);
+      oop(dst)->init_mark_raw();
+      }
+      obj_addr += size;
+//      obj_addr = bitmap->get_next_marked_addr(obj_addr,limit);
+    }
+  }
+
+}
+
+
 
 inline HeapWord* HeapRegion::par_allocate_no_bot_updates(size_t min_word_size,
                                                          size_t desired_word_size,

@@ -64,6 +64,7 @@ class HeapRegion;
 class HeapRegionSetBase;
 class nmethod;
 struct COG; //cgmin
+class G1FullGCCompactionPoint;
 
 #define HR_FORMAT "%u:(%s)[" PTR_FORMAT "," PTR_FORMAT "," PTR_FORMAT "]"
 #define HR_FORMAT_PARAMS(_hr_) \
@@ -305,6 +306,8 @@ class HeapRegion: public G1ContiguousSpace {
              G1BlockOffsetTable* bot,
              MemRegion mr);
 
+  ~HeapRegion(); //cgmin
+
   // Initializing the HeapRegion not only resets the data structure, but also
   // resets the BOT for that heap region.
   // The default values for clear_space means that we will do the clearing if
@@ -358,8 +361,10 @@ class HeapRegion: public G1ContiguousSpace {
   template<typename ApplyToMarkedClosure>
   inline void apply_to_marked_objects(G1CMBitMap* bitmap, ApplyToMarkedClosure* closure);
 
-  //cgmin
+  //cgmin heapRegion group function
   inline void find_group(G1CMBitMap* bitmap);
+  inline void prepare_group(G1CMBitMap* bitmap, G1FullGCCompactionPoint* cp);
+  inline void compact_group(G1CMBitMap* bitmap); 
   int smallCnt,smallSize,bigCnt,bigSize;
 
   // Override for scan_and_forward support.
@@ -706,17 +711,22 @@ class HeapRegion: public G1ContiguousSpace {
   void verify_rem_set() const;
 
   GrowableArray<COG>* _COG_Array; //cgmin
-  int _cog_cache_i;
-
+//  HeapWord* _bottom;
+  unsigned long *_pnMap; // pos diff
+  unsigned long *_dvMap; // neg diff
+  unsigned long _b4; // bottom % 4096
+  int _mapMax;
 };
 
-  //cgmin
+  //cgmin cog
   struct COG //continous object group
   {
-    oop start;
-    oop end;
-    unsigned long pd;
-    unsigned long nd;
+    HeapWord* start;
+    HeapWord* end;
+    unsigned long length,align_waste;
+    HeapWord* forward;
+//    unsigned long pd;
+//    unsigned long nd;
   };
 
 

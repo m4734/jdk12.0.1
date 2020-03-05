@@ -59,6 +59,12 @@ public:
   HeapRegion* current_region();
 
   GrowableArray<HeapRegion*>* regions();
+
+  //cgmin compactionPoint
+  size_t space_left();
+  HeapWord* top();
+  void occupy(size_t size);
+  void switch_region_public();
 };
 
 #endif // SHARE_GC_G1_G1FULLGCCOMPACTIONPOINT_HPP

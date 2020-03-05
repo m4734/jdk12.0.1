@@ -30,6 +30,9 @@
 #include "oops/oop.inline.hpp"
 #include "utilities/macros.hpp"
 
+#include "gc/g1/g1CollectedHeap.hpp" // cgmin
+#include "gc/g1/heapRegionManager.inline.hpp" //cgmin
+
 void PreservedMarks::restore() {
   while (!_stack.is_empty()) {
     const OopAndMarkOop elem = _stack.pop();
@@ -40,10 +43,36 @@ void PreservedMarks::restore() {
 
 void PreservedMarks::adjust_during_full_gc() {
   StackIterator<OopAndMarkOop, mtGC> iter(_stack);
+  
+  HeapRegion* hr;
+  oop forward;
+  int mapIndex;
+  unsigned long *pnMap;
+  unsigned long *dvMap;
+
   while (!iter.is_empty()) {
     OopAndMarkOop* elem = iter.next_addr();
 
     oop obj = elem->get_oop();
+
+//cgmin
+  hr = G1CollectedHeap::heap()->hrm()->addr_to_region((HeapWord*)(obj));
+  pnMap = hr->_pnMap;
+  mapIndex = ((unsigned long)(HeapWord*)obj - hr->_b4)/(4096);
+  if (pnMap[mapIndex] != 0)
+  {
+    dvMap = hr->_dvMap;
+    if (pnMap[mapIndex] == 1)
+      forward = oop((HeapWord*)obj + dvMap[mapIndex]);
+    else if (pnMap[mapIndex] == 2)
+      forward = oop((HeapWord*)obj - dvMap[mapIndex]);
+    else
+      forward = obj;
+    elem->set_oop(forward);
+    continue;
+  }
+
+
     if (obj->is_forwarded()) {
       elem->set_oop(obj->forwardee());
     }

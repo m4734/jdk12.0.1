@@ -169,9 +169,12 @@ void G1FullCollector::collect() {
   //cgmin
   struct timespec ts0,ts1,ts2,ts3,ts4,ts5,ts6;
 
+  printf("0 start\n");
+
   clock_gettime(CLOCK_MONOTONIC,&ts0);
 
   phase1_mark_live_objects();
+
   verify_after_marking();
 
   // Don't add any more derived pointers during later phases
@@ -182,22 +185,32 @@ void G1FullCollector::collect() {
 //  mark_group(); //cgmin
   clock_gettime(CLOCK_MONOTONIC,&ts1);
 
+  printf("1 %ld\n",(ts1.tv_sec-ts0.tv_sec)*1000000000+ts1.tv_nsec-ts0.tv_nsec);
+
   phase2_prepare_compaction();
   clock_gettime(CLOCK_MONOTONIC,&ts2);
-mark_group();//cgmin
+  printf("2 %ld\n",(ts2.tv_sec-ts1.tv_sec)*1000000000+ts2.tv_nsec-ts1.tv_nsec);
+//mark_group();//cgmin
 clock_gettime(CLOCK_MONOTONIC,&ts5);
 
   phase3_adjust_pointers();
   clock_gettime(CLOCK_MONOTONIC,&ts3);
+  printf("3 %ld\n",(ts3.tv_sec-ts5.tv_sec)*1000000000+ts3.tv_nsec-ts5.tv_nsec);
 
   phase4_do_compaction();
-  clock_gettime(CLOCK_MONOTONIC,&ts4);
 
+  syscall(335); //cgmin tlb flush all
+
+  clock_gettime(CLOCK_MONOTONIC,&ts4);
+  printf("4 %ld\n",(ts4.tv_sec-ts3.tv_sec)*1000000000+ts4.tv_nsec-ts3.tv_nsec);
+/*
   printf("1 %ld\n",(ts1.tv_sec-ts0.tv_sec)*1000000000+ts1.tv_nsec-ts0.tv_nsec);
   printf("2 %ld\n",(ts2.tv_sec-ts1.tv_sec)*1000000000+ts2.tv_nsec-ts1.tv_nsec);
   printf("2.5 %ld\n",(ts5.tv_sec-ts2.tv_sec)*1000000000+ts5.tv_nsec-ts2.tv_nsec);
   printf("3 %ld\n",(ts3.tv_sec-ts5.tv_sec)*1000000000+ts3.tv_nsec-ts5.tv_nsec);
   printf("4 %ld\n",(ts4.tv_sec-ts3.tv_sec)*1000000000+ts4.tv_nsec-ts3.tv_nsec);
+  printf("t %ld\n\n",(ts4.tv_sec-ts0.tv_sec)*1000000000+ts4.tv_nsec-ts0.tv_nsec);
+*/
   printf("t %ld\n\n",(ts4.tv_sec-ts0.tv_sec)*1000000000+ts4.tv_nsec-ts0.tv_nsec);
 
 }
@@ -224,8 +237,7 @@ void G1FullCollector::complete_collection() {
   _heap->print_heap_after_full_collection(scope()->heap_transition());
 }
 
-//cgmin
-void G1FullCollector::mark_group()
+void G1FullCollector::mark_group() //cgmin
 {
   printf("cgmin start mark_group\n");
   G1FullGCMarkGroupTask task(this);
